@@ -10,3 +10,7 @@ Aşağıda ise web arayüz görüntüleri mevcuttur;
 
 
 ![web](https://github.com/user-attachments/assets/88fe3416-f0f2-4192-8bb4-f84206a8b027)
+
+
+Android Mobil Apk v1.0 indir: https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-/releases/tag/v1.0
+Web / Backend Docker image görüntüle: https://hub.docker.com/repositories/onurcanpolat
