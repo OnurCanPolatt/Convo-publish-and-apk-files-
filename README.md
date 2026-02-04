@@ -1,5 +1,7 @@
 # Convo-publish-and-apk-files-
 Bu proje .net9 blazor hybrid projeside signalr teknolojisi kullanarak geliştirmiş olduğum sohbet uygulamasıdır.İçerisinde signalr ile mesajlaşma,minio ile dosya transferi ve janus(webrtc)) teknolojisi ile video konferans özelliği mevcuttut.Aynı zamanda profil oluşturup düzenleyebilme,sohbetleri silebilme,grup oluşturup sohbet edebilme mevcuttur.Aşağıda mobil uygulama içi görüntüler mevcuttur.
+
+
 <img src="https://github.com/user-attachments/assets/d5d292b0-cfbd-492e-bb2b-cf1ca24df49a" width="200">	
 <img src="https://github.com/user-attachments/assets/f01f0295-d156-46d8-9ff3-7951baaa25a0" width="200">	
 <img src="https://github.com/user-attachments/assets/c66124d3-d356-46d3-a58a-23c035080811" width="200">
