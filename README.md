@@ -5,7 +5,6 @@
 [![Docker Hub](https://img.shields.io/badge/Docker-Hub-blue?logo=docker)](https://hub.docker.com/r/onurcanpolat/convoapp)
 [![.NET 9](https://img.shields.io/badge/.NET-9.0-purple?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Blazor](https://img.shields.io/badge/Blazor-Hybrid-blue?logo=blazor)](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 **Yüksek performanslı, gerçek zamanlı iletişim platformu**
 
