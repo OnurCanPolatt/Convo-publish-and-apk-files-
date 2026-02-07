@@ -75,22 +75,22 @@ Android APK dosyasını buradan indirebilirsiniz:
 
 **Sistem Gereksinimleri:**
 - Android 7.0 (API 24) veya üzeri
-- 100 MB boş depolama alanı
+- 101.75 MB boş depolama alanı
 - İnternet bağlantısı
 
 ### 🖼️ Ekran Görüntüleri
 
 <details>
 <summary>📱 Mobil Uygulama Görüntüleri</summary>
-
-![Mobil App Demo](https://private-user-images.githubusercontent.com/181330416/544919382-f2c2669a-e777-4039-b88a-28969e28949c.gif)
+  
+![mobil](https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a)
 
 </details>
 
 <details>
 <summary>🌐 Web Arayüzü Görüntüleri</summary>
 
-![Web App Demo](https://private-user-images.githubusercontent.com/181330416/544919557-88fe3416-f0f2-4192-8bb4-f84206a8b027.gif)
+![web](https://github.com/user-attachments/assets/5c20975a-42c0-416a-8bd9-d0655cd60858)
 
 </details>
 
@@ -175,7 +175,7 @@ Download the Android APK here:
 
 **System Requirements:**
 - Android 7.0 (API 24) or higher
-- 100 MB free storage
+- 101.75 MB free storage
 - Internet connection
 
 ### 🖼️ Screenshots
@@ -183,14 +183,21 @@ Download the Android APK here:
 <details>
 <summary>📱 Mobile App Screenshots</summary>
 
-![Mobile App Demo](https://private-user-images.githubusercontent.com/181330416/544919382-f2c2669a-e777-4039-b88a-28969e28949c.gif)
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="300" alt="Convo Mobile Interface">
+  <br>
+  <b>📱 Convo Mobile App Interface</b>
+</p>
 </details>
 
 <details>
 <summary>🌐 Web Interface Screenshots</summary>
-
-![Web App Demo](https://private-user-images.githubusercontent.com/181330416/544919557-88fe3416-f0f2-4192-8bb4-f84206a8b027.gif)
+  
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="850" alt="Convo Web Interface">
+  <br>
+  <b>🌐 Convo Web Interface</b>
+</p>
 
 </details>
 
