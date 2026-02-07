@@ -75,22 +75,22 @@ Android APK dosyasını buradan indirebilirsiniz:
 
 **Sistem Gereksinimleri:**
 - Android 7.0 (API 24) veya üzeri
-- 101.75 MB boş depolama alanı
+- 100 MB boş depolama alanı
 - İnternet bağlantısı
 
 ### 🖼️ Ekran Görüntüleri
 
 <details>
 <summary>📱 Mobil Uygulama Görüntüleri</summary>
-  
-![mobil](https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a)
+
+![Mobil App Demo](https://private-user-images.githubusercontent.com/181330416/544919382-f2c2669a-e777-4039-b88a-28969e28949c.gif)
 
 </details>
 
 <details>
 <summary>🌐 Web Arayüzü Görüntüleri</summary>
 
-![web](https://github.com/user-attachments/assets/5c20975a-42c0-416a-8bd9-d0655cd60858)
+![Web App Demo](https://private-user-images.githubusercontent.com/181330416/544919557-88fe3416-f0f2-4192-8bb4-f84206a8b027.gif)
 
 </details>
 
@@ -114,6 +114,18 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 
 - GitHub: [@OnurCanPolatt](https://github.com/OnurCanPolatt)
 - Docker Hub: [onurcanpolat](https://hub.docker.com/u/onurcanpolat)
+
+### 🤝 Katkıda Bulunma
+
+Katkılarınızı bekliyoruz! Lütfen pull request göndermekten çekinmeyin.
+
+1. Fork edin
+2. Feature branch oluşturun (`git checkout -b feature/YeniOzellik`)
+3. Değişikliklerinizi commit edin (`git commit -m 'Yeni özellik eklendi'`)
+4. Branch'inizi push edin (`git push origin feature/YeniOzellik`)
+5. Pull Request oluşturun
+
+---
 
 <a name="english"></a>
 ## 🇬🇧 English
@@ -175,7 +187,7 @@ Download the Android APK here:
 
 **System Requirements:**
 - Android 7.0 (API 24) or higher
-- 101.75 MB free storage
+- 100 MB free storage
 - Internet connection
 
 ### 🖼️ Screenshots
@@ -183,21 +195,14 @@ Download the Android APK here:
 <details>
 <summary>📱 Mobile App Screenshots</summary>
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="300" alt="Convo Mobile Interface">
-  <br>
-  <b>📱 Convo Mobile App Interface</b>
-</p>
+![Mobile App Demo](https://private-user-images.githubusercontent.com/181330416/544919382-f2c2669a-e777-4039-b88a-28969e28949c.gif)
+
 </details>
 
 <details>
 <summary>🌐 Web Interface Screenshots</summary>
-  
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="850" alt="Convo Web Interface">
-  <br>
-  <b>🌐 Convo Web Interface</b>
-</p>
+
+![Web App Demo](https://private-user-images.githubusercontent.com/181330416/544919557-88fe3416-f0f2-4192-8bb4-f84206a8b027.gif)
 
 </details>
 
@@ -222,3 +227,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - GitHub: [@OnurCanPolatt](https://github.com/OnurCanPolatt)
 - Docker Hub: [onurcanpolat](https://hub.docker.com/u/onurcanpolat)
 
+### 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+<div align="center">
+
+**Built with ❤️ using .NET 9, Blazor, SignalR & Janus WebRTC**
+
+</div>
