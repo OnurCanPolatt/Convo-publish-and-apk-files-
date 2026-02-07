@@ -103,10 +103,6 @@ cd Convo-publish-and-apk-files-
 docker compose up -d
 ```
 
-### 📄 Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
-
 ### 👨‍💻 Geliştirici
 
 **Onur Can Polat**
@@ -203,11 +199,6 @@ git clone https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-.git
 cd Convo-publish-and-apk-files-
 docker compose up -d
 ```
-
-### 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ### 👨‍💻 Developer
 
 **Onur Can Polat**
