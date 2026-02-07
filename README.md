@@ -114,17 +114,6 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 - GitHub: [@OnurCanPolatt](https://github.com/OnurCanPolatt)
 - Docker Hub: [onurcanpolat](https://hub.docker.com/u/onurcanpolat)
 
-### 🤝 Katkıda Bulunma
-
-Katkılarınızı bekliyoruz! Lütfen pull request göndermekten çekinmeyin.
-
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/YeniOzellik`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Yeni özellik eklendi'`)
-4. Branch'inizi push edin (`git push origin feature/YeniOzellik`)
-5. Pull Request oluşturun
-
----
 
 <a name="english"></a>
 ## 🇬🇧 English
@@ -191,13 +180,13 @@ Download the Android APK here:
 
 ### 🖼️ Screenshots
 
-<details> <summary>📱 Mobil App Demo</summary>
+<summary>📱 Mobil App Demo</summary>
 
 <p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220" >
 
  </p> </details>
 
-<details> <summary>🌐 Web App Demo</summary>
+<summary>🌐 Web App Demo</summary>
 
 <p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700" >
 
@@ -225,21 +214,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - GitHub: [@OnurCanPolatt](https://github.com/OnurCanPolatt)
 - Docker Hub: [onurcanpolat](https://hub.docker.com/u/onurcanpolat)
-
-### 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-<div align="center">
-
-**Built with ❤️ using .NET 9, Blazor, SignalR & Janus WebRTC**
-
-</div>
