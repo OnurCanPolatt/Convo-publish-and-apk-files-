@@ -45,13 +45,18 @@ Convo, .NET 9, Blazor Hybrid, SignalR ve Janus WebRTC Gateway kullanılarak geli
 | **Konteynerizasyon** | Docker |
 | **Reverse Proxy** | Nginx |
 
-### 📦 Kurulum
+### 📦 Installation
 
-#### Docker ile Hızlı Başlangıç
+To install Convo, follow the detailed installation guide on Docker Hub. The guide includes Docker Compose configuration, Janus media server setup, Nginx configuration, and SSL certificate installation.
 
-Detaylı kurulum talimatları için Docker Hub sayfamızı ziyaret edin:
+[![Docker Hub Installation Guide](https://img.shields.io/badge/Installation_Guide-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
 
-Detaylı kurulum adımları ve yapılandırma bilgileri için [Docker Hub README](https://hub.docker.com/r/onurcanpolat/convoapp) sayfasına bakın.
+The Docker Hub guide provides complete instructions for:
+- Creating Docker Compose configuration
+- Janus WebRTC Gateway setup
+- MinIO storage configuration
+- Nginx reverse proxy setup
+- SSL/HTTPS certificate installation
 
 ### 📱 Mobil Uygulama
 
