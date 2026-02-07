@@ -83,13 +83,13 @@ Android APK dosyasını buradan indirebilirsiniz:
 
 <p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220">
 
-<i>📱 Convo Mobile App Interface</i> </p> </details>
+</p> </details>
 
 <details> <summary>🌐 Web Arayüzü Görüntüleri</summary>
 
 <p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700">
 
-<i>🌐 Convo Web Interface</i> </p>
+ </p>
 
 </details>
 
