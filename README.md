@@ -45,18 +45,18 @@ Convo, .NET 9, Blazor Hybrid, SignalR ve Janus WebRTC Gateway kullanılarak geli
 | **Konteynerizasyon** | Docker |
 | **Reverse Proxy** | Nginx |
 
-### 📦 Installation
+### 📦 Kurulum
 
-To install Convo, follow the detailed installation guide on Docker Hub. The guide includes Docker Compose configuration, Janus media server setup, Nginx configuration, and SSL certificate installation.
+Convo uygulamasını kurmak için Docker Hub'daki detaylı kurulum rehberini takip edin. Rehber, Docker Compose yapılandırması, Janus medya sunucusu kurulumu, Nginx ayarları ve SSL sertifikası kurulumunu içermektedir.
 
-[![Docker Hub Installation Guide](https://img.shields.io/badge/Installation_Guide-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
+[![Docker Hub Kurulum Rehberi](https://img.shields.io/badge/Kurulum_Rehberi-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
 
-The Docker Hub guide provides complete instructions for:
-- Creating Docker Compose configuration
-- Janus WebRTC Gateway setup
-- MinIO storage configuration
-- Nginx reverse proxy setup
-- SSL/HTTPS certificate installation
+Docker Hub rehberi aşağıdaki konular için eksiksiz talimatlar sağlar:
+- Docker Compose yapılandırması oluşturma
+- Janus WebRTC Gateway kurulumu
+- MinIO depolama yapılandırması
+- Nginx reverse proxy kurulumu
+- SSL/HTTPS sertifikası kurulumu
 
 ### 📱 Mobil Uygulama
 
@@ -134,11 +134,16 @@ Convo is a modern real-time communication platform built with .NET 9, Blazor Hyb
 
 ### 📦 Installation
 
-#### Quick Start with Docker
+To install Convo, follow the detailed installation guide on Docker Hub. The guide includes Docker Compose configuration, Janus media server setup, Nginx configuration, and SSL certificate installation.
 
-Visit our Docker Hub page for detailed installation instructions:
+[![Docker Hub Installation Guide](https://img.shields.io/badge/Installation_Guide-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
 
-For detailed setup steps and configuration, see the [Docker Hub README](https://hub.docker.com/r/onurcanpolat/convoapp).
+The Docker Hub guide provides complete instructions for:
+- Creating Docker Compose configuration
+- Janus WebRTC Gateway setup
+- MinIO storage configuration
+- Nginx reverse proxy setup
+- SSL/HTTPS certificate installation
 
 ### 📱 Mobile App
 
