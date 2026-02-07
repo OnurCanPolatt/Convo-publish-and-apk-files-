@@ -65,7 +65,7 @@ Android APK dosyasını buradan indirebilirsiniz:
 
 **Sistem Gereksinimleri:**
 - Android 7.0 (API 24) veya üzeri
-- 102 MB boş depolama alanı
+- 110 MB boş depolama alanı
 - İnternet bağlantısı
 
 ### 🖼️ Ekran Görüntüleri
@@ -152,7 +152,7 @@ Download the Android APK here:
 
 **System Requirements:**
 - Android 7.0 (API 24) or higher
-- 102 MB free storage
+- 110 MB free storage
 - Internet connection
 
 ### 🖼️ Screenshots
