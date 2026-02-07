@@ -81,13 +81,13 @@ Android APK dosyasını buradan indirebilirsiniz:
 ### 🖼️ Ekran Görüntüleri
 <details> <summary>📱 Mobil Uygulama Görüntüleri</summary>
 
-<p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220"alt="Convo Mobile Interface">
+<p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220">
 
 <i>📱 Convo Mobile App Interface</i> </p> </details>
 
 <details> <summary>🌐 Web Arayüzü Görüntüleri</summary>
 
-<p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700" alt="Convo Web Interface">
+<p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700">
 
 <i>🌐 Convo Web Interface</i> </p>
 
@@ -193,13 +193,13 @@ Download the Android APK here:
 
 <details> <summary>📱 Mobil App Demo</summary>
 
-<p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220" alt="Convo Mobile Interface">
+<p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220" >
 
  </p> </details>
 
 <details> <summary>🌐 Web App Demo</summary>
 
-<p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700" alt="Convo Web Interface">
+<p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700" >
 
 </p>
 
