@@ -51,20 +51,6 @@ Convo, .NET 9, Blazor Hybrid, SignalR ve Janus WebRTC Gateway kullanılarak geli
 
 Detaylı kurulum talimatları için Docker Hub sayfamızı ziyaret edin:
 
-[![Docker Hub](https://img.shields.io/badge/Kurulum_Rehberi-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
-
-**Hızlı Kurulum:**
-```bash
-# Proje dizinini oluştur
-mkdir ~/Convo && cd ~/Convo
-
-# Docker Compose dosyasını indir
-curl -O https://raw.githubusercontent.com/OnurCanPolatt/Convo-publish-and-apk-files-/main/docker-compose.yml
-
-# Servisleri başlat
-docker compose up -d
-```
-
 Detaylı kurulum adımları ve yapılandırma bilgileri için [Docker Hub README](https://hub.docker.com/r/onurcanpolat/convoapp) sayfasına bakın.
 
 ### 📱 Mobil Uygulama
@@ -146,20 +132,6 @@ Convo is a modern real-time communication platform built with .NET 9, Blazor Hyb
 #### Quick Start with Docker
 
 Visit our Docker Hub page for detailed installation instructions:
-
-[![Docker Hub](https://img.shields.io/badge/Installation_Guide-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
-
-**Quick Setup:**
-```bash
-# Create project directory
-mkdir ~/Convo && cd ~/Convo
-
-# Download Docker Compose file
-curl -O https://raw.githubusercontent.com/OnurCanPolatt/Convo-publish-and-apk-files-/main/docker-compose.yml
-
-# Start services
-docker compose up -d
-```
 
 For detailed setup steps and configuration, see the [Docker Hub README](https://hub.docker.com/r/onurcanpolat/convoapp).
 
