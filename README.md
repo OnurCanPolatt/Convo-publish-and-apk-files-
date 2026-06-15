@@ -102,7 +102,7 @@ docker compose up -d
 **Onur Can Polat**
 
 - GitHub: [@OnurCanPolatt](https://github.com/OnurCanPolatt)
-- Docker Hub: [onurcanpolat](https://hub.docker.com/u/onurcanpolat)
+- Docker Hub: [onurcanpolat](https://hub.docker.com/r/onurcanpolat/convoapp/)
 
 
 <a name="english"></a>
@@ -193,4 +193,4 @@ docker compose up -d
 **Onur Can Polat**
 
 - GitHub: [@OnurCanPolatt](https://github.com/OnurCanPolatt)
-- Docker Hub: [onurcanpolat](https://hub.docker.com/u/onurcanpolat)
+- Docker Hub: [onurcanpolat](https://hub.docker.com/r/onurcanpolat/convoapp/)
