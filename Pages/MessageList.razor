@@ -1,0 +1,351 @@
+﻿@using Domain.Entities
+@using Domain.Interfaces
+@using Domain.Models.Dto
+@using Infrastructure.Services.Events
+@inject IMessageService _messageService
+@inject NavigationManager Navigation
+@inject EventShop EventShop
+@using Microsoft.AspNetCore.Authorization
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject IGroupService _groupService
+@inject IFriendService _friendService
+@attribute [Authorize]
+
+@if (isVisible)
+{
+    @* ARKADAŞLAR KISMI (P2P Konuşmalar) *@
+    @if (friendConversations != null && friendConversations.Any())
+    {
+        @foreach (var friend in GetFilteredFriends())
+        {
+            @* ✅ DEĞİŞİKLİK: Fotoğrafı 'LayoutData' önbelleğinden alıyoruz *@
+            var profileImageUrl = LayoutData?.ProfileImages.ContainsKey(friend.Id) == true
+                ? LayoutData.ProfileImages[friend.Id]
+                : "/images/default-avatar.png";
+
+            <div class="discussion" @onclick="() => SelectUser(friend.Id)">
+                @* profileImageUrl'in sonuna her zaman yeni bir timestamp ekliyoruz *@
+                <div class="photo" style="@GetProfileImageStyle($"{profileImageUrl}")">
+                    @if (LayoutData?.OnlineUsers?.Contains(friend.Id.ToString()) == true)
+                    {
+                        <div class="online"></div>
+                    }
+                </div>
+                <div class="desc-contact">
+                    <p class="name">@friend.Name
+                        @if (LayoutData.unreadCounts.TryGetValue(friend.Id, out var count) && count > 0)
+                        {
+                            <span class="notification-badge">@count</span>
+                        }
+                    </p>
+                </div>
+                <i class="bi bi-x-circle" @onclick:stopPropagation="true"
+                   @onclick="() => DeletePrivateChat(friend.Id)"></i>
+            </div>
+        }
+    }
+
+    @* GRUPLAR KISMI *@
+    @if (groupConversations != null && groupConversations.Any())
+    {
+        @foreach (var group in GetFilteredGroups())  @* ✅ Artık ConversationListItemDto *@
+        {
+            <div class="discussion" @onclick="() => SelectGroup(group.Id)">
+                <div class="photo" style="@GetProfileImageStyle($"{group.ImageUrl}")">
+                </div>
+                <div class="desc-contact">
+                    <p class="name">
+                        @group.Name
+                        @if (LayoutData.unreadGroupCounts.TryGetValue(group.Id, out var count) && count > 0)
+                        {
+                            <span class="notification-badge">@count</span>
+                        }
+                    </p>
+                    <p class="message">Grup</p>
+                </div>
+                <i class="bi bi-x-circle" @onclick:stopPropagation="true"
+                @onclick="() => DeleteGroupChat(group.Id)"></i>
+            </div>
+        }
+    }
+
+    @* LOADING ve NO DATA kısımları *@
+    @if (!friendConversations.Any() && !groupConversations.Any() && isLoading)
+    {
+        <div class="no-data">
+            <p>Yükleniyor...</p>
+        </div>
+    }
+    else if (!friendConversations.Any() && !groupConversations.Any())
+    {
+        <div class="no-data">
+            <p>Henüz Sohbetiniz olan arkadaşınız veya grubunuz yok</p>
+        </div>
+    }
+}
+
+@code {
+    [CascadingParameter(Name = "LayoutData")]
+    public Convo.Shared.Layout.MainLayout.LayoutDataModel? LayoutData { get; set; }
+    [Parameter] public bool isVisible { get; set; }
+    [Parameter] public string SearchTerm { get; set; } = "";
+
+    // ❌ SİLİNDİ: [Parameter] public List<ChatRoom>? myGroups { get; set; }
+    // ❌ SİLİNDİ: private List<Friend>? myFriendsWhoConversationWithMe = new();
+    // ❌ SİLİNDİ: private List<Message>? myMessages = new();
+    // ❌ SİLİNDİ: private Dictionary<Guid, string> friendProfileImages = new();
+
+    // ✅ YENİ: Birleşik listeyi tutacak değişkenler
+    private List<ConversationListItemDto> friendConversations = new();
+    private List<ConversationListItemDto> groupConversations = new();
+
+    private bool isLoading = false;
+    private bool _hasInitialized = false;
+    
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Component yaşam döngüsünde sadece bir kez abone ol
+        EventShop.OnUIRefreshNeeded += HandleConversationsUpdated;
+        EventShop.OnGroupInfoUpdated += HandleConversationsUpdated;
+        EventShop.OnUserInfoUpdated += HandleConversationsUpdated;
+        EventShop.OnReceiveMessage += HandleNewMessage;
+
+        // İlk yükleme işlemi
+        if (isVisible)
+        {
+            await LoadConversations();
+            _hasInitialized = true;
+        }
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        // UI görünürlüğüne bağlı işlemler
+        if (isVisible && !_hasInitialized)
+        {
+            await LoadConversations();
+            _hasInitialized = true;
+        }
+        else if (!isVisible)
+        {
+            _hasInitialized = false;
+            // Event aboneliklerini burada kaldırmayacağız, Dispose() içinde kaldıracağız
+        }
+    }
+    private async void HandleNewMessage(object? sender, (Guid senderId, string messageContent, string? fileUrl, string messageType, long filesize, Guid? groupId, string? messageId, Guid? receiverId, DateTime sentAt) data)
+    {
+        // ✅ FIX: Kendi mesajımızsa işlem yapma
+        if (LayoutData == null || data.senderId == LayoutData.CurrentUserId) return;
+
+        await InvokeAsync(async () =>
+        {
+            bool isAlreadyVisible = false;
+
+            // ✅ FIX: Doğru konuşmayı kontrol et
+            if (data.groupId != null && data.groupId != Guid.Empty)
+            {
+                // Grup mesajı - groupId'ye bak
+                isAlreadyVisible = groupConversations.Any(g => g.Id == data.groupId.Value);
+            }
+            else
+            {
+                // P2P mesajı - senderId'ye bak (karşı taraf)
+                isAlreadyVisible = friendConversations.Any(f => f.Id == data.senderId);
+            }
+
+            // Eğer konuşma zaten listede varsa sadece badge güncelle
+            if (isAlreadyVisible)
+            {
+                StateHasChanged();
+                return; // ✅ Erken çık
+            }
+
+            // Yeni konuşma - Unhide yap ve listeye ekle
+            if (data.groupId != null)
+                await _groupService.UnhideGroupChatAsync(data.groupId.Value, LayoutData.CurrentUserId);
+            else
+                await _friendService.UnhidePrivateChatAsync(data.senderId, LayoutData.CurrentUserId);
+
+            // Tüm listeyi yeniden çek (yeni konuşma eklendi)
+            await LoadConversations();
+        });
+    }
+
+
+    private async Task LoadConversations()
+    {
+        // Sadece listeler tamamen boşsa loading göster
+        bool showLoading = !friendConversations.Any() && !groupConversations.Any();
+    
+        if (showLoading) 
+        {
+            isLoading = true;
+            StateHasChanged();
+        }
+
+        try
+        {
+            var all = await _messageService.GetRecentConversationsAsync(LayoutData.CurrentUserId);
+        
+            // Veriyi atarken listeleri Clear() yapmıyoruz, Blazor farkı kendisi anlar (Diffing)
+            friendConversations = all.Where(c => c.Type == ConversationType.Personal).ToList();
+            groupConversations = all.Where(c => c.Type == ConversationType.Group).ToList();
+        }
+        finally 
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    /// <summary>
+    /// ✅ YENİ: Hem grup hem de kullanıcı bilgisi güncellendiğinde listeyi yeniler.
+    /// </summary>
+    private async void HandleConversationsUpdated(object? sender, EventArgs e)
+    {
+        try
+        {
+            await InvokeAsync(async () =>
+            {
+                if (!_hasInitialized) return;
+
+                try
+                {
+                    Console.WriteLine("🔄 Sidebar listesi ve fotoğraflar tazeleniyor...");
+                    await LoadConversations();
+
+                    // ✅ YENİ: Profil fotoğrafları güncellendiği için UI'ı yeniden render et
+                    StateHasChanged();
+                }
+                catch (Exception ex) when (ex is ObjectDisposedException || ex is TaskCanceledException)
+                {
+                    // Sayfa o an kapandıysa hatayı görmezden gel
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ HandleConversationsUpdated hatası: {ex.Message}");
+        }
+    }
+
+
+    private string GetProfileImageStyle(string? imageUrl) // ✅ Artık null olabilir (string?)
+    {
+        if (string.IsNullOrEmpty(imageUrl) || imageUrl == "/images/default-avatar.png")
+        {
+            return "background-color: #E6E7ED;"; // Default background
+        }
+        return $"background-image: url('{imageUrl}'); background-size: cover; background-position: center;";
+    }
+
+    private void SelectUser(Guid userId)
+    {
+        Navigation.NavigateTo($"/chatPanel/{userId}");
+
+        if (LayoutData != null)
+        {
+            LayoutData.unreadCounts[userId] = 0;
+        }
+    }
+
+    private void SelectGroup(Guid groupId)
+    {
+        Navigation.NavigateTo($"/groupChat/{groupId}");
+        if (LayoutData != null)
+        {
+            LayoutData.unreadGroupCounts[groupId] = 0;
+        }
+    }
+
+    /// <summary>
+    /// ✅ GÜNCELLENDİ: Artık ConversationListItemDto listesini filtreler
+    /// </summary>
+    private IEnumerable<ConversationListItemDto> GetFilteredFriends()
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+            return friendConversations;
+
+        return friendConversations.Where(friend =>
+            friend.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    /// <summary>
+    /// ✅ GÜNCELLENDİ: Artık ConversationListItemDto listesini filtreler
+    /// </summary>
+    private IEnumerable<ConversationListItemDto> GetFilteredGroups()
+    {
+        if (string.IsNullOrWhiteSpace(SearchTerm))
+            return groupConversations;
+
+        return groupConversations.Where(group =>
+            group.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
+    private async Task DeletePrivateChat(Guid friendId)
+    {
+        if (LayoutData == null) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("showConfirmDialog",
+            "Sohbeti Silmek İstediğinden Emin misin?",
+            "Sohbet Silinecek !");
+        if (!confirmed) return;
+        try
+        {
+            // 1. Yeni servis metodumuzu çağırarak bayrağı 'true' yap
+            await _friendService.HidePrivateChatAsync(friendId, LayoutData.CurrentUserId);
+
+            // 2. UI'dan (listeden) anında kaldır
+            var itemToRemove = friendConversations.FirstOrDefault(f => f.Id == friendId);
+            if (itemToRemove != null)
+            {
+                friendConversations.Remove(itemToRemove);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"P2P sohbeti gizlenirken hata: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteGroupChat(Guid groupId)
+    {
+        if (LayoutData == null) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("showConfirmDialog",
+            "Grup Sohbetini Silmek İstediğinden Emin misin?",
+            "Sohbet Silinecek !");
+        if (!confirmed) return;
+
+        try
+        {
+            // 1. Yeni servis metodumuzu çağırarak bayrağı 'true' yap
+            await _groupService.HideGroupChatAsync(groupId, LayoutData.CurrentUserId);
+
+            // 2. UI'dan (listeden) anında kaldır
+            var itemToRemove = groupConversations.FirstOrDefault(g => g.Id == groupId);
+            if (itemToRemove != null)
+            {
+                groupConversations.Remove(itemToRemove);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Grup sohbeti gizlenirken hata: {ex.Message}");
+            // (Opsiyonel: Kullanıcıya NotificationService ile hata göster)
+        }
+    }
+    public void Dispose()
+    {
+        // Component kaldırılırken eventleri temizle
+        EventShop.OnGroupInfoUpdated -= HandleConversationsUpdated;
+        EventShop.OnUserInfoUpdated -= HandleConversationsUpdated;
+        EventShop.OnReceiveMessage -= HandleNewMessage;
+        Console.WriteLine("🧹 MessageListComponent temizlendi ve iptal edildi.");
+
+    }
+}

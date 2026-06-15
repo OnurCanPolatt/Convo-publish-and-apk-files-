@@ -1,0 +1,690 @@
+﻿    /* === Grup Bilgisi Paneli === */
+    .group-info-panel {
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* 100vh DEĞİL, 100% OLMALI! */
+        background: #f5f5f5;
+        overflow: hidden; /* Bu panelin kendisinin taşmasını engeller, bu bir sigortadır. */
+    }
+
+/* === Üst Kısım / Header === */
+    .header-chat {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        background: white;
+        border-bottom: 1px solid #e0e0e0;
+        gap: 15px;
+        flex-shrink: 0; /* Bu çok önemli! İçerik sıkışsa bile header'ın küçülmesini engeller. */
+    }
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.back-button:hover {
+    color: #007bff;
+}
+
+/* === Grup Profil Fotoğrafı === */
+.header-chat .icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #007bff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    position: relative;
+    font-size: 22px;
+    transition: box-shadow 0.2s;
+}
+
+.header-chat .icon:hover {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+
+.header-chat .icon i.bi-camera:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* === Grup Başlığı === */
+.group-header-info {
+    flex: 1;
+}
+
+.group-header-info .name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.group-header-info .name i {
+    cursor: pointer;
+    font-size: 15px;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.group-header-info .name i:hover {
+    color: #007bff;
+}
+
+.group-header-info .member-count {
+    margin: 0;
+    font-size: 13px;
+    color: #777;
+}
+
+/* === İçerik === */
+    .group-info-content {
+        overflow-y: auto;
+        overflow-x: visible; /* Yatayda taşmaya izin ver (dropdown için) */
+    }
+
+/* === Grup Bilgileri === */
+.info-section,
+.participants-section,
+.settings-section {
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+    .section-header {
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;                          /* ✅ Ekle */
+        align-items: center;                    /* ✅ Ekle */
+        justify-content: space-between;         /* ✅ Ekle */
+    }
+
+.section-header h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px 20px;
+    gap: 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item i {
+    font-size: 20px;
+    color: #666;
+    margin-top: 2px;
+}
+
+.info-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-text .label {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-text .value {
+    font-size: 14px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-text .value i {
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    transition: color 0.2s;
+}
+
+.info-text .value i:hover {
+    color: #007bff;
+}
+
+/* === Katılımcılar === */
+.participants-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    gap: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.participant-item:hover {
+    background: #f8f9fa;
+}
+
+.participant-photo {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #e0e0e0;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.participant-photo .online {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #28a745;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.participant-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.participant-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.admin-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: #007bff;
+    color: white;
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.admin-badge.owner {
+    background: #ffc107;
+    color: #333;
+}
+
+/* === Ayarlar === */
+.settings-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    background: white;
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+    color: #333;
+}
+
+.settings-button:hover {
+    background: #f8f9fa;
+}
+
+.settings-button.danger {
+    color: #dc3545;
+}
+
+.settings-button.danger:hover {
+    background: #fff5f5;
+}
+
+.settings-button i {
+    font-size: 18px;
+}
+
+.no-participants {
+    padding: 40px 20px;
+    text-align: center;
+    color: #999;
+}
+
+/* === Inline Edit === */
+.edit-input,
+.edit-textarea {
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.edit-input:focus,
+.edit-textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+.edit-textarea {
+    min-height: 60px;
+    resize: vertical;
+}
+
+.btn-save,
+.btn-cancel {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    color: #007bff;
+    transition: color 0.2s;
+}
+
+.btn-cancel {
+    color: #dc3545;
+}
+
+.btn-save:hover {
+    color: #0056b3;
+}
+
+.btn-cancel:hover {
+    color: #b02a37;
+}
+    /* === Grup Profil Fotoğrafı === */
+    .group-info-panel .header-chat .icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        background-color: #007bff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        position: relative;
+        font-size: 18px;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+    .participant-actions {
+        position: relative;
+        z-index: 5;
+        cursor: pointer;
+        padding: 5px; /* Tıklama alanını genişletelim */
+    }
+
+    .participant-actions i {
+        font-size: 18px;
+        color: #666;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .participant-actions i:hover {
+        color: #007bff;
+    }
+    .icon:hover::after {
+        content: "Fotoğraf değiştir";
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        font-size: 0.8rem;
+        text-align: center;
+        padding: 4px 0;
+        border-bottom-left-radius: 50%;
+        border-bottom-right-radius: 50%;
+    }
+
+    /* === Üye Ekleme Butonu === */
+    .btn-add-member {
+        background: #007bff;
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 16px;
+    }
+
+    .btn-add-member:hover {
+        background: #0056b3;
+    }
+
+    .section-header {
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* ✅ Bu satırı ekle */
+    }
+
+    /* === Modal Stilleri === */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        animation: slideUp 0.3s;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .modal-header h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: #666;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+
+    .btn-close:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 20px;
+        flex: 1;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* === Arama Kutusu === */
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        background: #f5f5f5;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        transition: border-color 0.2s;
+    }
+
+    .search-box:focus-within {
+        border-color: #007bff;
+        background: white;
+    }
+
+    .search-box i {
+        color: #666;
+        font-size: 18px;
+    }
+
+    .search-box input {
+        flex: 1;
+        border: none;
+        background: none;
+        outline: none;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .search-box input::placeholder {
+        color: #999;
+    }
+
+    /* === Kullanıcı Listesi === */
+    .users-list {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .users-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .users-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .users-list::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+
+    .users-list::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        transition: background 0.2s;
+        cursor: pointer;
+    }
+
+    .user-item:hover {
+        background: #f8f9fa;
+    }
+
+    .user-photo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        background-color: #e0e0e0;
+        flex-shrink: 0;
+    }
+
+    .user-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .user-name {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .user-email {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .btn-add {
+        background: #28a745;
+        border: none;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 18px;
+    }
+
+    .btn-add:hover {
+        background: #218838;
+        transform: scale(1.1);
+    }
+
+    .btn-add:active {
+        transform: scale(0.95);
+    }
+
+    /* === Loading ve No Results === */
+    .loading, .no-results {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .loading::after {
+        content: "...";
+        animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+        0%, 20% {
+            content: ".";
+        }
+        40% {
+            content: "..";
+        }
+        60%, 100% {
+            content: "...";
+        }
+    }
+    .dropdown-item {
+        cursor: pointer !important;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 15px;
+        font-size: 13px;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    /* Hover efekti (Admin/Üye yap butonu için) */
+    .dropdown-item:hover {
+        background-color: #f0f7ff;
+        color: #007bff;
+    }
+
+    /* Gruptan at butonu için özel hover efekti */
+    .dropdown-item.text-danger:hover {
+        background-color: #fff5f5;
+        color: #dc3545 !important;
+    }
+
+    /* Dropdown menüsünü biraz daha şık yapalım */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        padding: 5px;
+    }
+
+    /* İkonların boyutunu sabitleyelim */
+    .dropdown-item i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }

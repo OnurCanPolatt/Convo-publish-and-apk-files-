@@ -1,0 +1,859 @@
+﻿@page "/groupChat/{groupId:guid}"
+@using System.Diagnostics.CodeAnalysis
+@using Domain.Entities
+@using Domain.Interfaces
+@using Domain.Interfaces.ConferenceInterfaces
+@using Domain.Constants
+@using Domain.Enums
+@using Convo.Shared.Models.Dtos
+@using Convo.Shared.Wrappers
+@using System.Text.Json
+@using Domain.FileDataType;
+@using Domain.Models.Download;
+@using Radzen
+@using Infrastructure.Services.Events
+@inject IImageService imageService
+@inject IUserService _userService
+@inject IMessageService _messageService
+@inject IJSRuntime JSRuntime
+@inject ICacheService _cacheService
+@inject IDownloadService _downloadService
+@inject IConferenceService _conferenceService
+@inject IGroupService _groupService
+@inject HttpClient Http
+@inject NotificationService NotificationService
+@inject EventShop EventShop
+@inject NavigationManager NavigationManager
+@implements IDisposable
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.WebUtilities
+@inject IConfiguration Configuration
+@using Microsoft.AspNetCore.Http
+@using Microsoft.Extensions.Configuration
+@inject IHttpContextAccessor HttpContextAccessor
+
+
+@attribute [Authorize]
+
+@if (groupInfo != null && groupInfo.Id != Guid.Empty)
+{
+<section id="chat-panel-section" class="chat @(isInVideoCall ? "video-call-mode" : "")">
+    <!-- Header her zaman aynı -->
+    <span @onclick="OpenGroupInfo" style="display: block; cursor: pointer;">
+        <div class="header-chat">
+            <div class="icon" style="@GetProfileImageStyle(groupInfo?.ImageUrl)">
+                @if (string.IsNullOrEmpty(groupInfo?.ImageUrl))
+                {
+                    <span>G</span>
+                }
+            </div>
+            <div class="group-info">
+                <p class="name">@(groupInfo?.Name ?? "Yükleniyor...")</p>
+                <p class="member-status">@GetActiveMemberStatus()</p>
+            </div>
+            @if (!showWaitingCall && !isInVideoCall)
+            {
+                if (roomId == 0)
+                {
+                    <div class="call-buttons" 
+                         @onclick="StartVideoCall" 
+                         @onclick:stopPropagation="true">
+                        <i class="bi bi-camera-video-fill clickable"></i>
+                    </div>
+                }
+
+                else
+                {
+                    <div class="call-buttons" 
+                         @onclick="() => JoinConference(roomId)" 
+                         @onclick:stopPropagation="true">
+                        <div class="calling-ring">
+                            <i class="bi bi-phone-vibrate-fill clickable calling-icon"></i>
+                        </div>
+                    </div>
+                }
+                @* @if(!isInVideoCall && roomId!=null){ *@
+                @*     <i class="bi bi-telephone-outbound" *@
+                @*        @onclick:stopPropagation="true" *@
+                @*        @onclick="async () => await JoinConference(roomId)" ></i> *@
+                @* } *@
+            }
+            else
+            {
+                <span><i class ="bi bi-telephone-fill clickable" ></i > Waiting...</span>
+            }
+        </div>
+    </span>
+    @if (isInVideoCall)
+    {
+        <!-- Video Call Layout -->
+        <div class="video-call-content">
+            <!-- Sol taraf - Video -->
+            <div class="video-section">
+                <div id="background-video"></div>
+                <div id="small-videos"></div>
+
+                <div class="video-controls">
+                    <button class="btn-mic @(isMicMuted ? "muted" : "")" @onclick="ToggleMic">
+                        <i class="bi @(isMicMuted ? "bi-mic-mute" : "bi-mic")"></i>
+                    </button>
+                    <button class="btn-camera @(isCameraOff ? "off" : "")" @onclick="ToggleCamera">
+                        <i class="bi @(isCameraOff ? "bi-camera-video-off" : "bi-camera-video")"></i>
+                    </button>
+                    <button class="btn-end" @onclick="LeaveConference">
+                        <i class="bi bi-telephone-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sağ taraf - Chat -->
+            <div class="chat-section">
+                <div class="messages-chat" id="videoMessagesContainer">
+                    @if (_messages != null && _messages.Any())
+                    {
+                        @foreach (var message in _messages)
+                        {
+                            @if (message.SenderId == myId)
+                            {
+                                <!-- Kendi mesajlarımız (sağ taraf) -->
+                                <div class="message text-only">
+                                    @if (message.Type == MessageType.Text)
+                                    {
+                                        <TextMessageComponent message="@message"MessageFrom="sent"/>
+                                    }
+                                    else if (message.Type==MessageType.Video)
+                                    {
+                                        <VideoMessageComponent message="@message" MessageFrom="sent" />
+                                    }
+                                    else
+                                    {
+                                        <!-- Dosya mesajı -->
+                                        <FileMessageComponent message="@message" MessageFrom="sent"/>
+                                            
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <!-- Karşı tarafın mesajları (sol taraf) -->
+                                <div class="message">
+                                    @{
+                                        var sender = GetMessageSender(message.SenderId);
+                                        var senderImageUrl = GetSenderProfileImage(message.SenderId);
+                                    }
+
+                                    <div class="photo" style="@GetProfileImageStyle(senderImageUrl)">
+                                        @if (LayoutData?.OnlineUsers?.Contains(message.SenderId.ToString()) == true)
+                                        {
+                                            <div class="online"></div>
+                                        }
+                                    </div>
+
+                                    @if (message.Type == MessageType.Text)
+                                    {
+                                        <TextMessageComponent message="@message" MessageFrom="received"/>
+                                    }
+                                    else if (message.Type==MessageType.Video)
+                                    {
+                                        <VideoMessageComponent message="@message" MessageFrom="received" />
+                                    }
+                                    else
+                                    {
+                                        <!-- Dosya mesajı -->
+                                        <FileMessageComponent message="@message" MessageFrom="received"/>
+                                    }
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-messages">
+                            <p>Henüz mesaj yok</p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Dosya önizlemesi - Video Call için -->
+                @if (selectedFile != null)
+                {
+                    <div class="file-preview video-mode">
+                        <!-- Dosya bilgisi -->
+                        <div class="file-header">
+                            <i class="@_downloadService.GetFileIcon(selectedFile.Name) file-icon"></i>
+                            <div class="file-info">
+                                <div class="file-name">@selectedFile.Name</div>
+                                <div class="file-details">
+                                    @_downloadService.GetFileSize(selectedFile.Size) • @_downloadService.GetFileExtension(selectedFile.Name)
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!isUploading)
+                        {
+                            <!-- Normal durumda gösterilen butonlar -->
+                            <div class="preview-actions">
+                                <button class="btn-send" @onclick="SendSelectedFile">
+                                    <i class="bi bi-send"></i> Gönder
+                                </button>
+                                <button class="btn-cancel" @onclick="CancelFileSelection">
+                                    <i class="bi bi-x"></i> İptal
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Upload devam ederken gösterilen progress alanı -->
+                            <div class="upload-progress-section">
+                                <!-- Progress Bar -->
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: @(uploadProgress)%"></div>
+                                    </div>
+                                    <div class="progress-text">
+                                        @uploadProgress.ToString("F1")% - @uploadStatus
+                                    </div>
+                                </div>
+
+                                <!-- Speed & Time Info -->
+                                <div class="upload-stats">
+                                    <span>Hız: @uploadSpeed</span>
+                                    <span>Kalan: @remainingTime</span>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="upload-actions">
+                                    @if (!_downloadService.IsPaused)
+                                    {
+                                        <button class="btn-warning" @onclick="_downloadService.PauseUpload">
+                                            ⏸️ Duraklat
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-success" @onclick="_downloadService.ResumeUpload">
+                                            ▶️ Devam
+                                        </button>
+                                    }
+
+                                    <button class="btn-danger" @onclick="CancelUpload">
+                                        ❌ İptal
+                                    </button>
+
+                                    @if (hasUploadError)
+                                    {
+                                        <button class="btn-info" @onclick="RetryUpload">
+                                            🔄 Tekrar
+                                        </button>
+                                    }
+                                </div>
+
+                                <!-- Error Message -->
+                                @if (hasUploadError)
+                                {
+                                    <div class="error-message">
+                                        <strong>Hata:</strong> @uploadErrorMessage
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+
+                <div class="footer-chat">
+                    <!-- Chat input alanı -->
+                    @* <div class="footer-left-icons"> *@
+                    @*     <i class="bi bi-emoji-smile clickable" aria-hidden="true"></i> *@
+                    @* </div> *@
+                    <input type="text"
+                           class="write-message"
+                           placeholder="Mesajınızı yazın..."
+                           @bind="newMessage"
+                           @bind:event="oninput"
+                           @onkeydown="HandleKeyPress" />
+
+                    <div class="footer-right-icons">
+                        <InputFile id="fileInputVideo" OnChange="HandleFileSelected" style="display: none;" accept="*/*" />
+                        <label for="fileInputVideo">
+                            <i class="bi bi-file-earmark-post clickable"></i>
+                        </label>
+                        <i class="bi bi-send clickable" @onclick="SendTextMessage" aria-label="Send Message"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Normal Chat Layout - DÜZELTİLMİŞ -->
+        <div class="messages-chat" id="messagesContainer">
+            @if (_messages != null && _messages.Any())
+            {
+                @foreach (var message in _messages)
+                {
+                    @if (message.SenderId == myId)
+                    {
+                        <!-- Kendi mesajlarımız (sağ taraf) -->
+                        <div class="message text-only">
+                            @if (message.Type == MessageType.Text)
+                            {
+                                <TextMessageComponent message="@message"MessageFrom="sent" />
+                            }
+                            else if (message.Type==MessageType.Video)
+                            {
+                                <VideoMessageComponent message="@message" MessageFrom="sent" />
+                            }
+                            else
+                            {
+                                <!-- Dosya mesajı -->
+                                <FileMessageComponent message="@message" MessageFrom="sent"/>
+                                   
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- ✅ DÜZELTİLDİ: Karşı tarafın mesajları (sol taraf) -->
+                        <div class="message">
+                            @{
+                                var sender = GetMessageSender(message.SenderId);
+                                var senderImageUrl = GetSenderProfileImage(message.SenderId);
+                            }
+
+                            <div class="photo" style="@GetProfileImageStyle(senderImageUrl)">
+                                @if (LayoutData?.OnlineUsers?.Contains(message.SenderId.ToString()) == true)
+                                {
+                                    <div class="online"></div>
+                                }
+                            </div>
+
+                            @if (message.Type == MessageType.Text)
+                            {
+                                <TextMessageComponent message="@message" MessageFrom="received" />
+                                
+                            }
+                            else if (message.Type==MessageType.Video)
+                            {
+                                <VideoMessageComponent message="@message" MessageFrom="received" />
+                            }
+                            else
+                            {
+                                <!-- Dosya mesajı -->
+                                <FileMessageComponent message="@message" MessageFrom="received" />
+                                 
+                            }
+                        </div>
+                    }
+                }
+            }
+            else
+            {
+                <div class="no-messages">
+                    <p>Henüz mesaj yok</p>
+                </div>
+            }
+        </div>
+
+        <!-- Dosya önizlemesi - Normal Chat için (mesajlar ile input arasında) -->
+        @if (selectedFile != null)
+        {
+            <div class="file-preview normal-mode">
+                <!-- Dosya bilgisi -->
+                <div class="file-header">
+                    <i class="@_downloadService.GetFileIcon(selectedFile.Name) file-icon"></i>
+                    <div class="file-info">
+                        <div class="file-name">@selectedFile.Name</div>
+                        <div class="file-details">
+                            @_downloadService.GetFileSize(selectedFile.Size) • @_downloadService.GetFileExtension(selectedFile.Name)
+                        </div>
+                    </div>
+                </div>
+
+                @if (!isUploading)
+                {
+                    <!-- Normal durumda gösterilen butonlar -->
+                    <div class="preview-actions">
+                        <button class="btn-send" @onclick="SendSelectedFile">
+                            <i class="bi bi-send"></i> Gönder
+                        </button>
+                        <button class="btn-cancel" @onclick="CancelFileSelection">
+                            <i class="bi bi-x"></i> İptal
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <!-- Upload devam ederken gösterilen progress alanı -->
+                    <div class="upload-progress-section">
+                        <!-- Progress Bar -->
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: @(uploadProgress)%"></div>
+                            </div>
+                            <div class="progress-text">
+                                @uploadProgress.ToString("F1")% - @uploadStatus
+                            </div>
+                        </div>
+
+                        <!-- Speed & Time Info -->
+                        <div class="upload-stats">
+                            <span>Hız: @uploadSpeed</span>
+                            <span>Kalan: @remainingTime</span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="upload-actions">
+                            @if (!_downloadService.IsPaused)
+                            {
+                                <button class="btn-warning" @onclick="_downloadService.PauseUpload">
+                                    ⏸️ Duraklat
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn-success" @onclick="_downloadService.ResumeUpload">
+                                    ▶️ Devam
+                                </button>
+                            }
+
+                            <button class="btn-danger" @onclick="CancelUpload">
+                                ❌ İptal
+                            </button>
+
+                            @if (hasUploadError)
+                            {
+                                <button class="btn-info" @onclick="RetryUpload">
+                                    🔄 Tekrar
+                                </button>
+                            }
+                        </div>
+
+                        <!-- Error Message -->
+                        @if (hasUploadError)
+                        {
+                            <div class="error-message">
+                                <strong>Hata:</strong> @uploadErrorMessage
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Normal footer-chat -->
+        <div class="footer-chat">
+            <!-- Chat input alanı -->
+            @* <div class="footer-left-icons"> *@
+            @*     <i class="bi bi-emoji-smile clickable" aria-hidden="true"></i> *@
+            @* </div> *@
+            <input type="text"
+                   class="write-message"
+                   placeholder="Mesajınızı yazın..."
+                   @bind="newMessage"
+                   @bind:event="oninput"
+                   @onkeydown="HandleKeyPress" />
+
+            <div class="footer-right-icons">
+                <InputFile id="fileInput" OnChange="HandleFileSelected" style="display: none;" accept="*/*" />
+                <label for="fileInput">
+                    <i class="bi bi-file-earmark-post clickable"></i>
+                </label>
+
+                <i class="bi bi-send clickable" @onclick="SendTextMessage" aria-label="Send Message"></i>
+            </div>
+        </div>
+    }
+    
+</section>
+}
+else
+{
+    <div class="loading-panel rz-p-12 rz-text-align-center">
+        <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" Size="ProgressBarCircularSize.Medium" />
+        <p class="rz-mt-4">Grup bilgileri alınıyor veya grup artık mevcut değil...</p>
+    </div>
+}
+@code {
+
+    [CascadingParameter(Name = "LayoutData")]
+    public Convo.Shared.Layout.MainLayout.LayoutDataModel? LayoutData { get; set; }
+
+    [Parameter] public Guid GroupId { get; set; }
+    private Guid oldGroupId;
+
+    private bool shouldAutoJoinConference = false;
+    private int conferenceRoomId = 0;
+
+    private ChatRoom groupInfo { get; set; } = new();
+    private List<ChatRoomMember> groupMembers { get; set; } = new();
+    private Guid myId { get; set; }
+    private AppUser myInfo { get; set; }
+
+    private string newMessage = "";
+    private List<Message> _messages = new();
+    private IBrowserFile selectedFile;
+
+    // Upload UI Properties
+    private bool isUploading = false;
+    private bool hasUploadError = false;
+    private double uploadProgress = 0;
+    private string uploadStatus = "";
+    private string uploadErrorMessage = "";
+    private string uploadSpeed = "0 KB/s";
+    private string remainingTime = "--:--";
+
+    // Video Call Properties
+    private bool isInVideoCall = false;
+    private bool isMicMuted = false;
+    private bool isCameraOff = false;
+    private int roomId;
+    private string statusMessage = string.Empty;
+    private bool showWaitingCall = false;
+
+    private readonly object _messagesLock = new object();
+    private bool _jsInitialized = false;
+    private bool _isSending = false;
+    private bool _messagesLoaded = false; // ✅ Duplicate yükleme önleme flag
+    private Dictionary<Guid, string> memberProfileImages = new();
+
+    private bool _showGroupInfo = false;
+
+    public bool showGroupInfo
+    {
+        get => _showGroupInfo;
+        set
+        {
+            Console.WriteLine($"showGroupInfo değiştiriliyor: {_showGroupInfo} -> {value}");
+            Console.WriteLine($"Stack Trace: {Environment.StackTrace}");
+            _showGroupInfo = value;
+        }
+    }
+
+    public List<Message> Messages
+    {
+        get
+        {
+            lock (_messagesLock)
+            {
+                return _messages.ToList(); // Safe copy
+            }
+        }
+    }
+
+    private void AddMessageSafely(Message message)
+    {
+        lock (_messagesLock)
+        {
+            // 1. Duplicate kontrolü
+            if (_messages.Any(m => m.Id == message.Id))
+            {
+                Console.WriteLine($"⚠️ Duplicate mesaj eklenmedi: {message.Id}");
+                return;
+            }
+
+            // 2. Mesajı ekle
+            _messages.Add(message);
+
+            // 3. ✅ CRITICAL: Tarih bazlı sıralama
+            _messages = _messages
+                .OrderBy(m => m.SentAt)
+                .ThenBy(m => m.Id) // Aynı saniyede gelen mesajlar için ikincil sıralama
+                .ToList();
+        
+            Console.WriteLine($"✅ Mesaj eklendi ve sıralandı. Toplam: {_messages.Count}, Son mesaj: {message.SentAt:o}");
+        }
+    }
+    private void SetMessagesSafely(List<Message> newMessages)
+    {
+        lock (_messagesLock)
+        {
+            _messages.Clear();
+            _messages.AddRange(newMessages ?? new List<Message>());
+            Console.WriteLine($"✅ Messages set safely. Total: {_messages.Count}");
+        }
+    }
+
+    private void ClearMessagesSafely()
+    {
+        lock (_messagesLock)
+        {
+            _messages.Clear();
+            Console.WriteLine("✅ Messages cleared safely");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SubscribeToEvents();
+
+        // ✅ URL query parametrelerini kontrol et
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("autoJoinConference", out var autoJoin) && autoJoin == "true")
+        {
+            shouldAutoJoinConference = true;
+
+            if (query.TryGetValue("roomId", out var roomIdStr) && int.TryParse(roomIdStr, out var roomId))
+            {
+                conferenceRoomId = roomId;
+                Console.WriteLine($"🎥 Otomatik katılım parametreleri alındı - RoomId: {conferenceRoomId}");
+            }
+
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ScrollToBottom();
+            
+            if (!_jsInitialized)
+            {
+                _jsInitialized = true;
+                try
+                {
+                    // ✅ DÜZELTME: Environment'a göre Janus endpoint seç
+                    var isLocal = HttpContextAccessor.HttpContext?.Request.Host.Host == "localhost" ||
+                                  HttpContextAccessor.HttpContext?.Request.Host.Host == "127.0.0.1";
+        
+                    var janusUrl = isLocal 
+                        ? Configuration["Janus:HttpEndpoint"]
+                        : Configuration["Janus:ExternalHttpEndpoint"];
+                    await JSRuntime.InvokeVoidAsync("initJanus", janusUrl);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Janus başlatılamadı");
+                    statusMessage = "Janus başlatılırken bir hata oluştu";
+                    NotificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Summary = statusMessage,
+                        Duration = 4000
+                    });
+                }
+            }
+            var pendingRoomId = await JSRuntime.InvokeAsync<string>("sessionStorage.getItem", "pendingConferenceRoomId");
+        
+            if (!string.IsNullOrEmpty(pendingRoomId) && int.TryParse(pendingRoomId, out var roomId))
+            {
+                // ✅ Temizle
+                await JSRuntime.InvokeVoidAsync("sessionStorage.removeItem", "pendingConferenceRoomId");
+                await JoinConference(roomId);
+            
+                Console.WriteLine($"✅ Otomatik katılım tamamlandı - RoomId: {roomId}");
+            }
+        }
+    }
+    [SuppressMessage("ReSharper.DPA", "DPA0006: Large number of DB commands", MessageId = "count: 142")]
+    protected override async Task OnParametersSetAsync()
+    {
+        // 🛡️ Eğer zaten bu gruptaysak (sadece UI yenilendiyse) işlem yapma
+        if (oldGroupId == GroupId && _messagesLoaded)
+        { 
+            await ScrollToBottom();
+            return;
+        }
+
+        Console.WriteLine($"🔄 Grup Değişimi Algılandı: {oldGroupId} -> {GroupId}");
+
+        // 1️⃣ STATE SIFIRLAMA
+        // Kritik: CleanupPreviousGroup yerine sadece mesajları temizliyoruz.
+        // Çünkü EventShop aboneliklerini silersek yeni grupta mesaj alamayız.
+        ClearMessagesSafely();
+        oldGroupId = GroupId;
+        _messagesLoaded = false; 
+        
+
+        // 2️⃣ YENİ GRUP VERİLERİNİ YÜKLE
+        await LoadGroupData();
+
+        // 3️⃣ SIGNALR HUB'A YENİ GRUP İÇİN KAYDOL
+        // JS'e eklediğin yeni joinGroup metodunu burada çağırıyoruz
+        if (LayoutData?.IsSignalRReady == true && _jsInitialized)
+        {
+            try 
+            {
+                // JS tarafındaki joinGroup artık tekil string bekliyor
+                await JSRuntime.InvokeVoidAsync("window.signalRManager.joinGroup", GroupId.ToString());
+                Console.WriteLine($"📡 SignalR: {GroupId} odasına web üzerinden katılım sağlandı.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ SignalR Join hatası: {ex.Message}");
+            }
+        }
+    }
+    private async Task LoadGroupData()
+    {
+        groupInfo = await _groupService.GetFreshGroupInfo(GroupId);
+        if(groupInfo == null) return;
+
+        groupMembers = groupInfo?.Members?.ToList() ?? new List<ChatRoomMember>();
+
+        myInfo = await _userService.GetCurrentUserAsync();
+        if (myInfo == null)
+        {
+            Console.WriteLine("❌ Current user info could not be loaded!");
+            return;
+        }
+        myId = myInfo.Id;
+
+        await LoadMemberProfileImages();
+
+        // Sadece ilk yüklemede veya grup değiştiğinde cache'den oku
+        if (!_messagesLoaded)
+        {
+            var loadedMessages = await _cacheService.LoadGroupMessagesAsync(GroupId);
+            SetMessagesSafely(loadedMessages);
+            _messagesLoaded = true;
+        }
+
+        // ✅ ADIM 4.1: AKTİF ODAYI SUNUCUDAN KONTROL ET
+        // Component'in yerel 'roomId' değişkenini doldurur.
+        try
+        {
+            if (LayoutData?.IsSignalRReady == true) // Önceki adımdan (gruplara katılma)
+            {
+                this.roomId = await JSRuntime.InvokeAsync<int>("window.signalRManager.getActiveRoomForGroup", GroupId);
+            
+                if (this.roomId != 0)
+                {
+                    Console.WriteLine($"✅ Sunucudan aktif oda durumu alındı: {this.roomId}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("⚠️ SignalR hazır değil, oda durumu kontrol edilemedi. (Sayfa yenilemesi gerekebilir)");
+                this.roomId = 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Aktif oda kontrol hatası: {ex.Message}");
+            this.roomId = 0;
+        }
+
+        // ✅ DÜZELTME: DOM'un render olmasını bekle (Aynı kalır)
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(200);
+        await ScrollToBottom();
+    }
+
+    private async Task LoadMemberProfileImages()
+    {
+        if (groupMembers == null || !groupMembers.Any() || LayoutData == null)
+        {
+            memberProfileImages = new Dictionary<Guid, string>();
+            return;
+        }
+
+        Console.WriteLine($"🖼️ {groupMembers.Count} üyenin fotoğrafı önbellekten yükleniyor...");
+
+        // 1. Gruptaki tüm üyelerin ID'lerini bir listeye topla
+        var memberIds = groupMembers.Select(m => m.UserId).ToList();
+
+        // 2. 'MainLayout' önbelleğinden ('LayoutData.ProfileImages') bu ID'lere ait fotoğrafları al.
+        //    Eğer önbellekte yoksa (ki olmamalı), 'ImageService' ile DB'den çek (yedek plan).
+        var tempImages = new Dictionary<Guid, string>();
+        foreach (var memberId in memberIds)
+        {
+            if (LayoutData.ProfileImages.TryGetValue(memberId, out var cachedUrl))
+            {
+                // HIZLI YOL: Önbellekte bulundu
+                tempImages[memberId] = cachedUrl;
+            }
+            else
+            {
+                // YAVAŞ YOL (Yedek Plan): Önbellekte yok, DB/MinIO'dan çek ve önbelleğe ekle
+                try
+                {
+                    var dbUrl = await imageService.GetImageThumbnailUrlAsync(memberId);
+                    tempImages[memberId] = dbUrl;
+                    LayoutData.ProfileImages[memberId] = dbUrl; // Gelecek için önbelleğe ekle
+                }
+                catch
+                {
+                    tempImages[memberId] = "/images/default-avatar.png";
+                }
+            }
+        }
+
+        // 3. Component'in kullandığı 'memberProfileImages' sözlüğünü doldur
+        memberProfileImages = tempImages;
+        
+        Console.WriteLine($"✅ {memberProfileImages.Count} üye fotoğrafı yüklendi.");
+    }
+
+    private string GetActiveMemberStatus()
+    {
+        if (groupMembers == null || !groupMembers.Any())
+            return "Üye bilgisi yükleniyor...";
+
+        var activeMembers = groupMembers.Count(m => m.IsActive);
+        var onlineMembers = groupMembers.Count(m =>
+            m.IsActive && LayoutData?.OnlineUsers?.Contains(m.UserId.ToString()) == true);
+
+        return $"{activeMembers} üye • {onlineMembers} aktif";
+    }
+
+    private void OpenGroupInfo()
+    {
+        Console.WriteLine($"🔵 OpenGroupInfo - Navigate to /groupInfo/{GroupId}");
+        NavigationManager.NavigateTo($"/groupInfo/{GroupId}");
+    }
+
+    private void SubscribeToEvents()
+    {
+        EventShop.OnReceiveMessage -= HandleReceiveGroupMessage;
+        EventShop.OnFriendJoinedConference -= HandleFriendJoined;
+        EventShop.OnGroupInfoUpdated -= HandleUpdateGroupInfo;
+        EventShop.OnGroupConferenceEnded -= HandleGroupConferenceEndedAsync;
+        
+        EventShop.OnReceiveMessage += HandleReceiveGroupMessage;
+        EventShop.OnFriendJoinedConference += HandleFriendJoined;
+        EventShop.OnGroupInfoUpdated += HandleUpdateGroupInfo;
+        EventShop.OnGroupConferenceEnded += HandleGroupConferenceEndedAsync;
+        
+        _downloadService.OnUploadProgressChanged -= OnUploadProgressChanged;
+        _downloadService.OnUploadStatusChanged -= OnUploadStatusChanged;
+        _downloadService.OnUploadError -= OnUploadError;
+        _downloadService.OnUploadCompleted -= OnUploadCompleted;
+        _downloadService.OnUploadCancelled -= OnUploadCancelled;
+        
+        _downloadService.OnUploadProgressChanged += OnUploadProgressChanged;
+        _downloadService.OnUploadStatusChanged += OnUploadStatusChanged;
+        _downloadService.OnUploadError += OnUploadError;
+        _downloadService.OnUploadCompleted += OnUploadCompleted;
+        _downloadService.OnUploadCancelled += OnUploadCancelled;
+
+    }
+    private void CleanupPreviousGroup()
+    {
+        if (isInVideoCall)
+        {
+            Task.Run(async () => await LeaveConference());
+        }
+        ClearMessagesSafely();
+        _messagesLoaded = false;
+    }
+    public void Dispose()
+    {
+        EventShop.OnReceiveMessage -= HandleReceiveGroupMessage;
+        EventShop.OnFriendJoinedConference -= HandleFriendJoined;
+        EventShop.OnGroupInfoUpdated -= HandleUpdateGroupInfo;
+        EventShop.OnGroupConferenceEnded -= HandleGroupConferenceEndedAsync;
+
+        // DownloadService event handlers
+        _downloadService.OnUploadProgressChanged -= OnUploadProgressChanged;
+        _downloadService.OnUploadStatusChanged -= OnUploadStatusChanged;
+        _downloadService.OnUploadError -= OnUploadError;
+        _downloadService.OnUploadCompleted -= OnUploadCompleted;
+        _downloadService.OnUploadCancelled -= OnUploadCancelled;
+        
+        CleanupPreviousGroup();
+    }
+
+}

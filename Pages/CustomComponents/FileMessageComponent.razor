@@ -1,0 +1,157 @@
+@using Domain.Enums
+@inject IJSRuntime JSRuntime
+@inject IDownloadService _downloadService
+
+@{
+var fileNameLower = message.FileData?.FileName?.ToLower() ?? message.Content?.ToLower() ?? "";
+bool isAudio = fileNameLower.EndsWith(".mp3") || fileNameLower.EndsWith(".wav") || message.Type == MessageType.Audio;
+bool isVideo = fileNameLower.EndsWith(".mp4") || fileNameLower.EndsWith(".webm") || message.Type == MessageType.Video;
+}
+
+@if (isLightboxVisible)
+{
+<div class="lightbox-overlay" @onclick="CloseLightbox">
+    <button class="lightbox-close" aria-label="Close">&times;</button>
+    <div class="lightbox-content" @onclick:stopPropagation="true">
+        <img src="@FileLink" alt="@(message.FileData?.FileName ?? "Görsel")" />
+    </div>
+</div>
+}
+
+<div class="file-with-time @MessageFrom">
+    @if (sender != null)
+    {
+    <p class="sender-name">@(sender.UserName ?? "Bilinmeyen")</p>
+    }
+
+    <div class="file-message">
+        @if (message.Type == MessageType.Image || fileNameLower.EndsWith(".jpg") || fileNameLower.EndsWith(".png") || fileNameLower.EndsWith(".jpeg"))
+        {
+        <div class="media-container">
+            <img src="@FileLink" class="preview-image" @onclick="OpenLightbox" />
+            <div class="media-footer">
+                <span class="file-size">@_downloadService.GetFileSize(message.FileSize ?? message.FileData?.FileSize ?? 0)</span>
+                <button class="btn-download-link" @onclick="HandleDownload"><i class="bi bi-download"></i> İndir</button>
+            </div>
+        </div>
+        }
+        else if (isAudio)
+        {
+        <div class="media-container">
+            <audio controls preload="metadata" class="audio-player">
+                <source src="@FileLink" type="audio/mpeg">
+                <source src="@FileLink" type="audio/wav">
+            </audio>
+            <div class="media-footer">
+                <span class="file-size">@_downloadService.GetFileSize(message.FileSize ?? message.FileData?.FileSize ?? 0)</span>
+                <button class="btn-download-link" @onclick="HandleDownload"><i class="bi bi-download"></i> İndir</button>
+            </div>
+        </div>
+        }
+        else if (isVideo)
+        {
+        <div class="media-container">
+            <video controls playsinline preload="metadata" class="video-player">
+                <source src="@FileLink" type="video/mp4">
+                <source src="@FileLink" type="video/webm">
+            </video>
+            <div class="media-footer">
+                <span class="file-size">@_downloadService.GetFileSize(message.FileSize ?? message.FileData?.FileSize ?? 0)</span>
+                <button class="btn-download-link" @onclick="HandleDownload"><i class="bi bi-download"></i> İndir</button>
+            </div>
+        </div>
+        }
+        else
+        {
+        <div class="file-info-box">
+            <i class="@_downloadService.GetFileIcon(fileNameLower) file-icon"></i>
+            <div class="file-details">
+                <span class="file-name">@(message.FileData?.FileName ?? message.Content)</span>
+                <div class="media-footer" style="margin-top:5px; padding:0;">
+                    <span class="file-size">@_downloadService.GetFileSize(message.FileSize ?? message.FileData?.FileSize ?? 0)</span>
+                    <button class="btn-download-link" @onclick="HandleDownload"><i class="bi bi-download"></i> İndir</button>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+
+    <p class="time">@message.SentAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+</div>
+
+@code {
+[Parameter] public Message message { get; set; } = new();
+[Parameter] public string MessageFrom { get; set; } = "";
+[Parameter] public AppUser? sender { get; set; }
+public string FileLink { get; set; } = "";
+private bool isLightboxVisible = false;
+
+protected override void OnParametersSet()
+{
+if (message != null && !string.IsNullOrEmpty(message.FileUrl)) FileLink = message.FileUrl;
+}
+
+private async Task HandleDownload() => await JSRuntime.InvokeVoidAsync("downloadFile", FileLink, message.FileData?.FileName ?? "file");
+private void OpenLightbox() => isLightboxVisible = true;
+private void CloseLightbox() => isLightboxVisible = false;
+}
+
+<style>
+    .file-with-time { display: flex; flex-direction: column; max-width: 65%; }
+    .file-message {
+        background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 18px 18px 18px 4px;
+        padding: 8px; width: fit-content; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    .file-with-time.sent { align-self: flex-end; }
+    .file-with-time.sent .file-message { background: #e7f3ff; border-radius: 18px 18px 4px 18px; }
+
+    .media-container { width: 280px; display: flex; flex-direction: column; }
+    .preview-image { width: 100%; border-radius: 10px; cursor: pointer; margin-bottom: 5px; }
+    .video-player { width: 100%; border-radius: 10px; background: #000; max-height: 200px; display: block; }
+    .audio-player { width: 100%; height: 35px; margin-bottom: 5px; }
+
+    .media-footer { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; }
+    .file-size { font-size: 11px; color: #6c757d; font-weight: 500; }
+    .btn-download-link { background: none; border: none; color: #007bff; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; }
+    .btn-download-link:hover { text-decoration: underline; }
+
+    .file-info-box { display: flex; align-items: center; gap: 10px; min-width: 220px; }
+    .file-details { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+    .file-name { font-size: 12px; font-weight: 600; word-break: break-all; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-icon { font-size: 24px; color: #6c757d; }
+
+    .time { font-size: 11px; color: #6c757d; margin-top: 6px; margin-left: 18px; font-weight: 500; }
+    .sender-name { font-weight: 600; font-size: 12px; color: #666; margin: 0 0 4px 18px; }
+    .file-with-time.sent .time, .file-with-time.sent .sender-name { text-align: right; margin-right: 18px; margin-left: 0; }
+
+    .lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;backdrop-filter: blur(5px); }
+    .lightbox-content img {
+        /* 🚀 Standartlaştırma Kuralları */
+        width: auto;
+        height: auto;
+        max-width: 85vw;  /* Ekran genişliğinin %85'ini geçme */
+        max-height: 85vh; /* Ekran yüksekliğinin %85'ini geçme */
+        min-width: 320px; /* Çok küçük resimlerin kaybolmasını engelle */
+
+        object-fit: contain; /* En-boy oranını her zaman koru */
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        border: 2px solid rgba(255,255,255,0.1);
+    }
+    .lightbox-close {
+        position: absolute;
+        top: 30px;
+        right: 40px;
+        color: #fff;
+        font-size: 45px;
+        font-weight: bold;
+        border: none;
+        background: none;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .lightbox-close:hover {
+        transform: scale(1.2);
+        color: #ff4d4f;
+    }
+</style>
