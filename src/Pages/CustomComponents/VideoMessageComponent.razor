@@ -1,0 +1,67 @@
+@using Domain.Enums
+@inject IJSRuntime JSRuntime
+@inject IDownloadService _downloadService
+
+<div class="video-with-time @MessageFrom">
+    @if (sender != null)
+    {
+    <p class="sender-name">@(sender.UserName ?? "Bilinmeyen")</p>
+    }
+
+    <div class="video-message">
+        <div class="media-container">
+            <video controls playsinline preload="metadata" class="video-player">
+                <source src="@VideoLink" type="video/mp4">
+                <source src="@VideoLink" type="video/webm">
+                Tarayıcınız video desteklemiyor.
+            </video>
+
+            <div class="media-footer">
+                <span class="file-size">@_downloadService.GetFileSize(message.FileSize ?? message.FileData?.FileSize ?? 0)</span>
+                <button class="btn-download-link" @onclick="HandleDownload"><i class="bi bi-download"></i> İndir</button>
+            </div>
+        </div>
+    </div>
+
+    <p class="time">@message.SentAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+</div>
+
+@code {
+[Parameter] public Message message { get; set; } = new();
+[Parameter] public string MessageFrom { get; set; } = "";
+[Parameter] public AppUser? sender { get; set; }
+public string VideoLink { get; set; } = "";
+
+protected override void OnParametersSet()
+{
+if (message != null && !string.IsNullOrEmpty(message.FileUrl)) VideoLink = message.FileUrl;
+}
+
+private async Task HandleDownload()
+{
+if (!string.IsNullOrEmpty(VideoLink))
+await JSRuntime.InvokeVoidAsync("downloadFile", VideoLink, message.FileData?.FileName ?? "video.mp4");
+}
+}
+
+<style>
+    .video-with-time { display: flex; flex-direction: column; max-width: 65%; }
+    .video-message {
+        background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 18px 18px 18px 4px;
+        padding: 8px; width: fit-content; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    .video-with-time.sent { align-self: flex-end; }
+    .video-with-time.sent .video-message { background: #e7f3ff; border-radius: 18px 18px 4px 18px; }
+
+    .media-container { width: 280px; display: flex; flex-direction: column; }
+    .video-player { width: 100%; border-radius: 10px; background: #000; max-height: 200px; display: block; object-fit: contain; }
+
+    .media-footer { display: flex; justify-content: space-between; align-items: center; padding: 5px 2px 0 2px; }
+    .file-size { font-size: 11px; color: #6c757d; font-weight: 500; }
+    .btn-download-link { background: none; border: none; color: #007bff; font-size: 11px; font-weight: 600; cursor: pointer; padding: 0; }
+    .btn-download-link:hover { text-decoration: underline; }
+
+    .time { font-size: 11px; color: #6c757d; margin-top: 6px; margin-left: 18px; font-weight: 500; }
+    .sender-name { font-weight: 600; font-size: 12px; color: #666; margin: 0 0 4px 18px; }
+    .video-with-time.sent .time, .video-with-time.sent .sender-name { text-align: right; margin-right: 18px; margin-left: 0; }
+</style>

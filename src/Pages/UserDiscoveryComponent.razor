@@ -1,0 +1,553 @@
+﻿@page "/home"
+@using Domain.Entities
+@using Domain.Interfaces
+@using Domain.Enums
+@using Radzen
+@using Radzen.Blazor
+@using Domain.Constants
+@using Infrastructure.Services.Events
+@inject NavigationManager NavigationManager
+@inject IUserService userService
+@inject IFriendService friendService
+@inject NotificationService NotificationService
+@inject IJSRuntime JSRuntime
+@using System.Text.Json;
+@implements IDisposable
+@inject EventShop EventShop
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Kullanıcıları Keşfet</PageTitle>
+
+<div class="rz-p-4">
+    <!-- Başlık -->
+    <RadzenText TextStyle="TextStyle.H4" class="rz-mb-4">
+        <RadzenIcon Icon="people" class="rz-mr-2" />
+        <b>Kullanıcıları Keşfet</b>
+    </RadzenText>
+
+    <!-- Yükleniyor göstergesi -->
+    @if (isLoading)
+    {
+        <RadzenStack AlignItems="AlignItems.Center" Gap="1rem" class="rz-p-8">
+            <RadzenProgressBarCircular ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+            <RadzenText>Kullanıcılar yükleniyor...</RadzenText>
+        </RadzenStack>
+    }
+    else
+    {
+        <!-- RadzenDataGrid -->
+        <RadzenDataGrid AllowFiltering="true"
+                        AllowColumnResize="true"
+                        AllowSorting="true"
+                        PageSize="10"
+                        AllowPaging="true"
+                        ShowPagingSummary="true"
+                        Data="@users"
+                        TItem="AppUser"
+                        Density="Density.Compact"
+                        GridLines="DataGridGridLines.Both"
+                        class="rz-shadow-2">
+            <Columns>
+                <!-- Profil Fotoğrafı -->
+                <RadzenDataGridColumn Title="Fotoğraf"
+                                      Sortable="false"
+                                      Filterable="false"
+                                      Width="100px"
+                                      TextAlign="TextAlign.Center">
+                    <Template Context="user">
+                        @if (!string.IsNullOrEmpty(GetUserProfileImageUrl(user)))
+                        {
+                            <RadzenImage Path="@GetUserProfileImageUrl(user)"
+                                         Style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"
+                                         AlternateText="" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-person-circle"
+                               style="font-size:50px; color:#adb5bd;"></i>
+                        }
+                    </Template>
+
+                </RadzenDataGridColumn>
+
+                <!-- Ad -->
+                <RadzenDataGridColumn Property="@nameof(AppUser.FirstName)"
+                                      Title="Ad"
+                                      Width="100px" />
+
+                <!-- Soyad -->
+                <RadzenDataGridColumn Property="@nameof(AppUser.LastName)"
+                                      Title="Soyad"
+                                      Width="100px" />        
+                <!-- Cinsiyet -->
+
+                <RadzenDataGridColumn Property="@nameof(AppUser.Gender)"
+                                      Title="Cinsiyet"
+                                      Width="120px" />
+
+                <!-- Yaş -->
+                <RadzenDataGridColumn Property="@nameof(AppUser.Age)"
+                                      Title="Yaş"
+                                      Width="100px"
+                                      TextAlign="TextAlign.Center" />
+
+                <!-- Şehir -->
+                <RadzenDataGridColumn Property="@nameof(AppUser.City)"
+                                      Title="Şehir"
+                                      Width="100px">
+                    <Template Context="user">
+                        @if (!string.IsNullOrEmpty(user?.City))
+                        {
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                                <RadzenIcon Icon="location_on" Style="color: var(--rz-secondary); font-size: 16px;" />
+                                <span>@user.City</span>
+                            </RadzenStack>
+                        }
+                        else
+                        {
+                            <span class="rz-color-secondary">-</span>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <!-- Hakkında -->
+                <RadzenDataGridColumn Property="@nameof(AppUser.About)"
+                                      Title="Hakkında"
+                                      Width="250px">
+                    <Template Context="user">
+                        @if (!string.IsNullOrEmpty(user?.About))
+                        {
+                            <span title="@user.About">@GetTruncatedText(user.About, 50)</span>
+                        }
+                        else
+                        {
+                            <span class="rz-color-secondary">Belirtilmemiş</span>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <!-- Online Durumu -->
+                <RadzenDataGridColumn Property="@nameof(AppUser)"
+                                      Title="Durum"
+                                      Width="120px"
+                                      TextAlign="TextAlign.Center">
+                    <Template Context="user">
+                        <RadzenBadge BadgeStyle="@(onlineUsers.Contains(user?.Id.ToString() ?? "") ? BadgeStyle.Success : BadgeStyle.Secondary)"
+                                     Text="@(onlineUsers.Contains(user?.Id.ToString() ?? "") ? "🟢 Online" : "🔴 Offline")"
+                                     Variant="Variant.Flat" />
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <!-- Aksiyon Butonları -->
+                <RadzenDataGridColumn Title="İşlemler"
+                                      Sortable="false"
+                                      Filterable="false"
+                                      Width="90px"
+                                      TextAlign="TextAlign.Center">
+                    <Template Context="user">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.Center">
+                            @{
+                                var (activeSentByMe, activeSentToMe, areFriends) = GetButtonStates(user);
+                            }
+
+                            @if (activeSentByMe)
+                            {
+                                <!-- Ben AKTİF PENDING istek göndermişim - İPTAL -->
+                                <RadzenButton Text="İPTAL"
+                                              Icon="cancel"
+                                              ButtonStyle="ButtonStyle.Danger"
+                                              Variant="Variant.Outlined"
+                                              Size="ButtonSize.ExtraSmall"
+                                              Click="@(() => RemoveFriendRequest(user?.Id ?? Guid.Empty))"
+                                              title="İsteği İptal Et" />
+                            }
+                            else if (activeSentToMe)
+                            {
+                                <!-- Bana AKTİF PENDING istek gelmiş - REDDET ve KABUL ET -->
+                                <RadzenButton Text="REDDET"
+                                              Icon="close"
+                                              ButtonStyle="ButtonStyle.Danger"
+                                              Variant="Variant.Outlined"
+                                              Size="ButtonSize.ExtraSmall"
+                                              Click="@(() => RejectFriendRequest(user?.Id ?? Guid.Empty))"
+                                              title="İsteği Reddet" />
+
+                                <RadzenButton Text="KABUL ET"
+                                              Icon="person_add"
+                                              ButtonStyle="ButtonStyle.Success"
+                                              Variant="Variant.Outlined"
+                                              Size="ButtonSize.ExtraSmall"
+                                              Click="@(() => AcceptFriendRequest(user?.Id ?? Guid.Empty))"
+                                              title="İsteği Kabul Et" />
+                            }
+                            else if (areFriends)
+                            {
+                                <!-- Arkadaşız - ÇIKAR -->
+                                <RadzenButton Text="ÇIKAR"
+                                              Icon="person_remove"
+                                              ButtonStyle="ButtonStyle.Danger"
+                                              Variant="Variant.Outlined"
+                                              Size="ButtonSize.ExtraSmall"
+                                              Click="@(() => RemoveFriend(user?.Id ?? Guid.Empty))"
+                                              title="Arkadaştan Çıkar" />
+                            }
+                            else
+                            {
+                                <!-- Hiçbir AKTİF istek yok ve arkadaş değiliz - EKLE -->
+                                <RadzenButton Text="EKLE"
+                                              Icon="person_add"
+                                              ButtonStyle="ButtonStyle.Primary"
+                                              Variant="Variant.Outlined"
+                                              Size="ButtonSize.ExtraSmall"
+                                              Click="@(() => SendFriendRequest(user?.Id ?? Guid.Empty))"
+                                              title="Arkadaş Olarak Ekle" />
+                            }
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+
+        <!-- Kullanıcı bulunamadı mesajı -->
+        @if (!users.Any())
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Info" Variant="Variant.Flat" Shade="Shade.Lighter" class="rz-mt-4">
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                    <RadzenIcon Icon="info" />
+                    <RadzenText>Henüz hiç kullanıcı yok.</RadzenText>
+                </RadzenStack>
+            </RadzenAlert>
+        }
+    }
+</div>
+
+@code {
+    [CascadingParameter(Name = "LayoutData")]
+    public Convo.Shared.Layout.MainLayout.LayoutDataModel? LayoutData { get; set; }
+
+    public List<string> onlineUsers => LayoutData?.OnlineUsers ?? new();
+    public Guid currentUserId => LayoutData?.CurrentUserId ?? Guid.Empty;
+    public string currentUserName => LayoutData?.CurrentUserName ?? string.Empty;
+    public List<AppUser> users => LayoutData?.Users ?? new();
+    public bool isLoading => LayoutData?.IsLoading ?? true;
+    public Dictionary<Guid, string> profileImages => LayoutData?.ProfileImages ?? new();
+
+    private List<Request> myFriendRequests = new();
+    private List<Friend> myFriends = new();
+    
+    private bool _disposed = false;
+    private CancellationTokenSource _cts = new();
+    
+    private EventHandler? _onlineHandler;
+    private EventHandler<(string fromUser, string message)>? _infoHandler;
+    private EventHandler? _infoSelfHandler;
+
+    // ✅ Buton durumlarını kontrol eden metod
+    private (bool activeSentByMe, bool activeSentToMe, bool areFriends) GetButtonStates(AppUser user)
+    {
+        Console.WriteLine($"🔍 GetButtonStates çağrıldı - User: {user?.UserName}");
+        Console.WriteLine($"📊 myFriendRequests Count: {myFriendRequests?.Count ?? 0}");
+        Console.WriteLine($"📊 myFriends Count: {myFriends?.Count ?? 0}");
+        if (user?.Id == null) return (false, false, false);
+
+        // ✅ SADECE AKTİF PENDING istekleri kontrol et
+        var activeSentByMe = myFriendRequests.Any(fr =>
+            fr.SenderId == currentUserId &&
+            fr.ReceiverId == user.Id);
+
+        var activeSentToMe = myFriendRequests.Any(fr =>
+            fr.SenderId == user.Id &&
+            fr.ReceiverId == currentUserId);
+
+        // ✅ Arkadaşlık kontrolü (ACCEPTED status VEYA Friends tablosu)
+        var acceptedRequest = myFriendRequests.Any(fr =>
+            ((fr.SenderId == currentUserId && fr.ReceiverId == user.Id) ||
+             (fr.SenderId == user.Id && fr.ReceiverId == currentUserId)));
+
+        var friendsTableEntry = myFriends.Any(f =>
+            (f.UserId == currentUserId && f.FriendId == user.Id) ||
+            (f.UserId == user.Id && f.FriendId == currentUserId));
+
+        var areFriends = acceptedRequest || friendsTableEntry;
+
+        return (activeSentByMe, activeSentToMe, areFriends);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"🔍 UserComponent initialized - Users count: {users.Count}, Loading: {isLoading}");
+
+        _onlineHandler = async (s, e) => await InvokeAsync(StateHasChanged);
+        _infoHandler = async (s, data) => await HandleInfo(s, data);
+        _infoSelfHandler = async (s, e) => await HandleInfoSelf(s, e);
+        
+        EventShop.OnlineUsersUpdated += _onlineHandler;
+        EventShop.OnFriendInfoSelfReceived += _infoSelfHandler;
+        EventShop.OnFriendInfoReceived += _infoHandler;
+        
+        await GetMyFriendRequests();
+        await GetMyFriends();
+    }
+    public async Task HandleInfo(object? sender, (string fromUser, string message) data)
+    {
+        if (_disposed) return;
+
+        try
+        {
+            var getuserName = await GetUserName(Guid.Parse(data.fromUser));
+            // Yenilemeleri sırayla yap, yalnızca değişiklik varsa state değiştir
+            await GetMyFriendRequests();
+            await GetMyFriends();
+
+            // Notification (log)
+            NotificationSeverity severity = data.message switch
+            {
+                var msg when msg == NotificationConstants.Titles.FriendRequest => NotificationSeverity.Info,
+                var msg when msg == NotificationConstants.Titles.FriendRequestRemoved => NotificationSeverity.Warning,
+                var msg when msg == NotificationConstants.Titles.FriendRequestAccepted => NotificationSeverity.Success,
+                var msg when msg == NotificationConstants.Titles.FriendRequestRejected => NotificationSeverity.Warning,
+                var msg when msg == NotificationConstants.Titles.FriendRemoved => NotificationSeverity.Success,
+                _ => NotificationSeverity.Info
+            };
+            //
+            // NotificationService.Notify(new NotificationMessage
+            // {
+            //     Severity = severity,
+            //     Summary = $"{getuserName}: {data.message}",
+            //     Duration = 4000
+            // });
+
+            if (!_disposed) await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ UserComponent HandleInfo error: {ex.Message}");
+        }
+    }
+
+    public async Task HandleInfoSelf(object? sender, EventArgs e)
+    {
+        if (_disposed) return;
+
+        try
+        {
+            await GetMyFriendRequests();
+            await GetMyFriends();
+            if (!_disposed) await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ UserComponent HandleInfoSelf error: {ex.Message}");
+        }
+    }
+    private async Task SendFriendRequest(Guid friendId)
+    {
+        if (friendId == Guid.Empty) return;
+
+        try
+        {
+            var result = await friendService.SendFriendRequest(friendId);
+            if (result)
+            {
+                // ✅ UI güncellemesi için delay ekle
+                await Task.Delay(100);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Arkadaşlık isteği gönderme hatası: {ex.Message}");
+        }
+    }
+
+        public async Task AcceptFriendRequest(Guid friendId)
+    {
+        if (friendId == Guid.Empty) return;
+
+        try
+        {
+            var result = await friendService.AcceptFriendRequest(friendId);
+            if (result)
+            {
+
+
+                // ✅ UI güncellemesi için delay ekle
+                await Task.Delay(100);
+                await GetMyFriends();
+                await InvokeAsync(StateHasChanged);
+            }
+
+            EventShop.TriggerUIRefreshNeeded();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Arkadaşlık isteği kabul etme hatası: {ex.Message}");
+        }
+    }
+
+    public async Task RemoveFriendRequest(Guid friendId)
+    {
+        if (friendId == Guid.Empty) return;
+
+        try
+        {
+            var result = await friendService.RemoveFriendRequest(friendId);
+            if (result)
+            {
+
+
+                // ✅ UI güncellemesi için delay ekle
+                await Task.Delay(100);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Arkadaşlık isteği iptal etme hatası: {ex.Message}");
+        }
+    }
+
+    private async Task RejectFriendRequest(Guid friendId)
+    {
+        if (friendId == Guid.Empty) return;
+
+        try
+        {
+            var result = await friendService.RejectFriendRequest(friendId);
+            if (result)
+            {
+
+
+                // ✅ UI güncellemesi için delay ekle
+                await Task.Delay(100);
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Arkadaşlık isteği iptal etme hatası: {ex.Message}");
+        }
+    }
+
+    private async Task RemoveFriend(Guid friendId)
+    {
+        if (friendId == Guid.Empty) return;
+
+        try
+        {
+            // ✅ SweetAlert artık boolean döndürüyor
+            var isConfirmed = await JSRuntime.InvokeAsync<bool>("showConfirmDialog",
+                "Arkadaşı Kaldır",
+                "Bu kişiyi arkadaş listenizden kaldırmak istediğinizden emin misiniz?",
+                "Evet, Kaldır",
+                "Vazgeç");
+
+            // Kullanıcının cevabını kontrol et
+            if (isConfirmed)
+            {
+                Console.WriteLine("✅ Kullanıcı arkadaş kaldırmayı onayladı");
+
+                // Kullanıcı "Evet" dedi, işlemi devam ettir
+                var removeResult = await friendService.RemoveFriend(friendId);
+                if (removeResult)
+                {
+                    Console.WriteLine("✅ Arkadaş başarıyla kaldırıldı");
+                    
+
+                    // UI güncellemesi
+                    await Task.Delay(100);
+                    await GetMyFriends();
+                    await InvokeAsync(StateHasChanged);
+                    EventShop.TriggerUIRefreshNeeded();
+                }
+                else
+                {
+                    Console.WriteLine("❌ Arkadaş kaldırma işlemi başarısız oldu");
+                }
+            }
+            else
+            {
+                Console.WriteLine("❌ Kullanıcı arkadaş kaldırma işlemini iptal etti");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Arkadaş kaldırma hatası: {ex.Message}");
+        }
+    }
+
+    public async Task<string> GetUserName(Guid userId)
+    {
+        return await userService.GetUserNameAsync(userId);
+    }
+    private async Task GetMyFriendRequests()
+    {
+        try
+        {
+            var newRequests = (await friendService.GetFriendRequests(currentUserId)) ?? new List<Request>();
+
+            // Sadece gerçekten değiştiyse ata + StateHasChanged çağır
+            bool changed = !Enumerable.SequenceEqual(myFriendRequests.Select(x => x.SenderId + "_" + x.ReceiverId),
+                newRequests.Select(x => x.SenderId + "_" + x.ReceiverId));
+            if (changed)
+            {
+                myFriendRequests = new List<Request>(newRequests);
+                Console.WriteLine($"🔄 Friend requests loaded: {myFriendRequests.Count}");
+                if (!_disposed) await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Friend requests alınırken hata: {ex.Message}");
+        }
+    }
+
+    private async Task GetMyFriends()
+    {
+        try
+        {
+            var newFriends = (await friendService.GetMyFriends()) ?? new List<Friend>();
+
+            // basit karşılaştırma
+            bool changed = !Enumerable.SequenceEqual(myFriends.Select(f => f.UserId + "_" + f.FriendId),
+                newFriends.Select(f => f.UserId + "_" + f.FriendId));
+            if (changed)
+            {
+                myFriends = new List<Friend>(newFriends);
+                Console.WriteLine($"🔄 Friends loaded: {myFriends.Count}");
+                if (!_disposed) await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Friends alınırken hata: {ex.Message}");
+        }
+    }
+
+
+    private string GetUserProfileImageUrl(AppUser user)
+    {
+        return profileImages.TryGetValue(user?.Id ?? Guid.Empty, out var url) ? url : "/images/default-avatar.png";
+    }
+    private static string GetTruncatedText(string? text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        return text.Length > maxLength ? text.Substring(0, maxLength) + "..." : text;
+    }
+
+
+    public void Dispose()
+    {
+        _disposed = true;
+        try { _cts.Cancel(); } catch {}
+        
+        if (_onlineHandler != null) EventShop.OnlineUsersUpdated -= _onlineHandler;
+        if (_infoHandler != null) EventShop.OnFriendInfoReceived -= _infoHandler;
+        if (_infoSelfHandler != null) EventShop.OnFriendInfoSelfReceived -= _infoSelfHandler;
+            Console.WriteLine($"🧹 UserComponent event handlers temizlendi");
+
+    }
+
+}

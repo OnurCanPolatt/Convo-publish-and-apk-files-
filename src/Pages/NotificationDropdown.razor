@@ -1,0 +1,263 @@
+﻿@page "/notification"
+@using Radzen
+@using Radzen.Blazor
+@using Domain.Interfaces
+@using Domain.Entities
+@using Domain.Enums
+@inject ICacheService CacheService
+@inject IUserService _userService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<div class="notification-dropdown">
+    <div class="notification-header">
+        <h5>Bildirimler</h5>
+        @if (allNotifications.Any())
+        {
+            <button class="clear-all-btn" @onclick="ClearAllNotifications">
+                Tümünü Temizle
+            </button>
+        }
+    </div>
+
+    <div class="notification-content">
+        @if (!allNotifications.Any())
+        {
+            <div class="notification-empty">
+                <i class="bi bi-bell-slash"></i>
+                <p>Henüz bildirim yok</p>
+            </div>
+        }
+        else
+        {
+            <div class="notification-section">
+                <h6 class="section-title">Hepsi</h6>
+                @foreach (var notification in allNotifications.Take(50))
+                {
+                    <div class="notification-item read">
+                        <div class="notification-avatar">
+                            @if (LayoutData != null && LayoutData.ProfileImages.TryGetValue(notification.FromUserId, out var imageUrl) 
+                                                    && !string.IsNullOrEmpty(imageUrl))
+                            {
+                                <img src="@imageUrl" class="user-avatar" alt="avatar" />
+                            }
+                            else
+                            {
+                                @* Standart Default Avatar *@
+                                <i class="bi bi-person-circle default-avatar-icon"></i>
+                            }
+                        </div>
+                        <div class="notification-text">
+                            <p><strong>@notification.FromUser.UserName</strong>: @GetNotificationMessage(notification)</p>
+                            <small>@GetTimeAgo(notification.CreatedAt)</small>
+                        </div>
+
+                        <i class="bi bi-x-circle" 
+                           title="Sil"
+                           @onclick:stopPropagation="true"
+                           @onclick="() => DeleteNotification(notification.Id)"></i>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+@code {
+    [CascadingParameter(Name = "LayoutData")]
+    public Convo.Shared.Layout.MainLayout.LayoutDataModel? LayoutData { get; set; }
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    private List<Notification> allNotifications = new();
+    private List<Notification> unreadNotifications = new();
+    private AppUser userInfo { get; set; }
+    private Guid userId { get; set; }
+
+    private DotNetObjectReference<NotificationDropdown>? _dotNetRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userInfo = await _userService.GetCurrentUserAsync();
+        if (userInfo == null)
+        {
+            Console.WriteLine("⚠️ Current user null - NotificationComponent başlatılamadı.");
+            return;
+        }
+
+        userId = userInfo.Id;
+
+        await LoadNotifications();
+        await MarkAllAsRead();
+
+        _dotNetRef = DotNetObjectReference.Create(this);
+        await JSRuntime.InvokeVoidAsync("window.signalRManager.addNotificationUpdateListener", _dotNetRef);
+    }
+
+    // ✅ YENİ: Bildirimleri yükle
+    private async Task LoadNotifications()
+    {
+        allNotifications = await CacheService.GetUserNotificationsAsync(userId);
+        unreadNotifications = allNotifications.Where(n => !n.IsRead).ToList();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // ✅ YENİ: JavaScript'ten çağrılacak metod
+    [JSInvokable]
+    public async Task OnNotificationUpdated()
+    {
+        Console.WriteLine("🔔 Notification güncellendi, cache'ten yeniden yükleniyor");
+        await LoadNotifications();
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        if (!unreadNotifications.Any())
+        {
+            await OnClose.InvokeAsync(true);
+            return;
+        }
+
+        var notificationIds = unreadNotifications.Select(n => n.Id).ToList();
+        await CacheService.MarkMultipleAsReadInCacheAsync(userId, notificationIds);
+
+        foreach (var notification in unreadNotifications.ToList())
+        {
+            notification.IsRead = true;
+        }
+
+        unreadNotifications.Clear();
+        await InvokeAsync(StateHasChanged);
+        await OnClose.InvokeAsync(true);
+    }
+
+    // ✅ YENİ: Dispose
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (JSRuntime != null)
+                await JSRuntime.InvokeVoidAsync("window.signalRManager.removeNotificationUpdateListener");
+
+            _dotNetRef?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"⚠️ Dispose sırasında hata: {ex.Message}");
+        }
+    }
+
+
+    // Diğer metodlar aynı kalır...
+    private string GetNotificationIcon(NotificationType type)
+    {
+        Console.WriteLine($"DEBUG - Type: {type}, Value: {(int)type}");
+
+        return type switch
+        {
+            NotificationType.FriendRequestAccepted => "person-check-fill",
+            NotificationType.FriendRequestReject => "person-x-fill",
+            NotificationType.System => "gear-fill",
+            NotificationType.FriendRemoved => "person-dash-fill",
+            Domain.Enums.NotificationType.FriendRequestRemoved => "person-x-fill",
+            _ => "bell-fill"
+        };
+    }
+
+    private string GetNotificationMessage(Notification notification)
+    {
+        return notification.Type switch
+        {
+            NotificationType.FriendRequestAccepted => "Arkadaşlık isteğinizi kabul etti",
+            NotificationType.FriendRequestReject => "Arkadaşlık isteğinizi reddetti",
+            NotificationType.System => "Sistem bildirimi",
+            NotificationType.FriendRemoved => "Arkadaş listesinden çıkardı.",
+            NotificationType.FriendRequestRemoved => "Arkadaş isteğini geri çekti.",
+            _ => "Bildirim"
+        };
+    }
+
+    private string GetTimeAgo(DateTime createdAt)
+    {
+        var timeSpan = DateTime.UtcNow - createdAt;
+        return timeSpan switch
+        {
+            { TotalMinutes: < 1 } => "Şimdi",
+            { TotalMinutes: < 60 } => $"{(int)timeSpan.TotalMinutes} dk önce",
+            { TotalHours: < 24 } => $"{(int)timeSpan.TotalHours} saat önce",
+            { TotalDays: < 7 } => $"{(int)timeSpan.TotalDays} gün önce",
+            _ => createdAt.ToString("dd.MM.yyyy")
+        };
+    }
+
+// ✅ Tekli bildirim silme
+    public async Task DeleteNotification(Guid notificationId)
+    {
+        try 
+        {
+            // SweetAlert Confirm Diyaloğu
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showConfirmDialog", 
+                "Bildirimi Sil", 
+                "Bu bildirimi silmek istediğinize emin misiniz?", 
+                "Sil", 
+                "Vazgeç");
+
+            if (confirmed)
+            {
+                // 1. UI'dan hemen kaldır
+                var notif = allNotifications.FirstOrDefault(n => n.Id == notificationId);
+                if (notif != null)
+                {
+                    allNotifications.Remove(notif);
+                    unreadNotifications.RemoveAll(n => n.Id == notificationId);
+                }
+
+                // 2. Cache ve DB operasyonu
+                await CacheService.RemoveNotificationsFromCacheAsync(userId, new List<Guid> { notificationId });
+
+                // 3. Başarı mesajı (isteğe bağlı)
+                await JSRuntime.InvokeVoidAsync("showSuccessDialog", "Silindi", "Bildirim başarıyla kaldırıldı.");
+                
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Bildirim silinirken hata: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("showErrorDialog", "Hata", "Bildirim silinemedi.");
+        }
+    } 
+
+    // ✅ Tüm bildirimleri temizle
+    public async Task ClearAllNotifications()
+    {
+        try 
+        {
+            // SweetAlert Confirm Diyaloğu
+            var confirmed = await JSRuntime.InvokeAsync<bool>("showConfirmDialog", 
+                "Tümünü Temizle", 
+                "Tüm bildirimleriniz silinecek. Emin misiniz?", 
+                "Evet, Temizle", 
+                "İptal");
+
+            if (confirmed)
+            {
+                // 1. UI listelerini boşalt
+                allNotifications.Clear();
+                unreadNotifications.Clear();
+
+                // 2. CacheService üzerinden tümünü pasife çek
+                await CacheService.ClearAllNotificationsFromCacheAsync(userId);
+
+                // 3. Başarı mesajı
+                await JSRuntime.InvokeVoidAsync("showSuccessDialog", "Temizlendi", "Tüm bildirimler silindi.");
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Bildirimler temizlenirken hata: {ex.Message}");
+            await JSRuntime.InvokeVoidAsync("showErrorDialog", "Hata", "Bildirimler temizlenemedi.");
+        }
+    }
+}

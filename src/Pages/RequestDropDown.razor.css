@@ -1,0 +1,240 @@
+﻿/* RequestDropdown.razor.css - NotificationDropdown ile aynı stiller */
+
+.notification-dropdown {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    width: 350px;
+    max-height: 400px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    z-index: 1002;
+    overflow: hidden;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    background: #f8f9fa;
+}
+
+    .notification-header h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.notification-content {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.notification-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+    .notification-empty i {
+        font-size: 48px;
+        margin-bottom: 10px;
+        opacity: 0.5;
+    }
+
+.section-title {
+    padding: 10px 15px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6c757d;
+    background: #f8f9fa;
+    text-transform: uppercase;
+}
+
+.notification-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+    .notification-item:hover {
+        background: #f8f9fa;
+    }
+
+    .notification-item.unread {
+        background: #f8f9ff;
+        border-left: 3px solid #007bff;
+    }
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.notification-item.unread .notification-icon {
+    background: #007bff;
+    color: white;
+}
+
+.notification-text {
+    flex: 1;
+}
+
+    .notification-text p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #333;
+    }
+
+    .notification-text small {
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background: #dc3545;
+    border-radius: 50%;
+    margin-left: 8px;
+}
+
+/* Action Butonları - NotificationDropdown ile aynı */
+.notification-actions {
+    display: flex;
+    gap: 5px;
+    margin-left: 8px;
+}
+
+.action-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.accept-btn {
+    background: #28a745;
+    color: white;
+}
+
+    .accept-btn:hover {
+        background: #218838;
+        transform: scale(1.1);
+    }
+
+.reject-btn {
+    background: #dc3545;
+    color: white;
+}
+
+    .reject-btn:hover {
+        background: #c82333;
+        transform: scale(1.1);
+    }
+.request-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.request-action-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.accept-btn {
+    background: #28a745;
+    color: white;
+}
+
+    .accept-btn:hover {
+        background: #218838;
+        transform: scale(1.1);
+    }
+
+.reject-btn {
+    background: #dc3545;
+    color: white;
+}
+
+    .reject-btn:hover {
+        background: #c82333;
+        transform: scale(1.1);
+    }
+@media (max-width: 768px) {
+    .notification-dropdown {
+        right: 15px;
+        width: 320px;
+        top: 65px;
+    }
+}
+
+@media (max-width: 640px) {
+    .notification-dropdown {
+        right: 10px;
+        width: calc(100vw - 20px);
+        top: 60px;
+    }
+}
+.notification-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    gap: 12px;
+}
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+    flex-shrink: 0;
+}
+.default-avatar-icon {
+    font-size: 45px; /* .user-avatar width/height ile aynı */
+    color: #adb5bd;
+    line-height: 1;
+    display: inline-block;
+    width: 45px;
+    height: 45px;
+    text-align: center;
+}

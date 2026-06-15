@@ -1,0 +1,393 @@
+﻿/* ChatPanel - Standart Component Yapısı */
+
+.chat {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-color: #FFF;
+    border-radius: inherit;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Chat */
+.chat .header-chat {
+    background-color: #FFF;
+    height: 80px;
+    box-shadow: 0px 2px 4px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+}
+
+.chat .header-chat .icon {
+    position: relative;
+    color: #515151;
+    font-size: 14pt;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #E6E7ED;
+    background-size: cover;
+    background-position: center;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.chat .header-chat .name {
+    margin: 0 0 0 20px;
+    text-transform: uppercase;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13pt;
+    color: #515151;
+    font-weight: 600;
+    flex: 1;
+}
+
+.chat .header-chat .online {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Call Buttons */
+.chat .call-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat .call-buttons i {
+    font-size: 18px;
+    color: #515151;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.chat .call-buttons i:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+    transform: scale(1.05);
+}
+
+/* Messages Chat */
+.chat .messages-chat {
+    flex: 1;
+    padding: 20px 30px;
+    overflow-y: auto;
+    background: linear-gradient(to bottom, #fafbfc 0%, #f8f9fa 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    scroll-behavior: smooth;
+}
+
+.chat .messages-chat .message {
+    display: flex;
+    align-items: flex-start;
+}
+
+.chat .messages-chat .message .photo {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    background: #E6E7ED;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+/* ✅ YENİ EKLENECEK KURAL: Mesajlardaki online ikonunu stilendir */
+/* This rule targets the .online div inside a message's .photo div */
+.chat .messages-chat .message .photo .online {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Sent messages alignment */
+.chat .text-only {
+    justify-content: flex-end;
+}
+
+/* No messages placeholder */
+.chat .no-messages {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    color: #6c757d;
+    font-size: 16px;
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 10px;
+    margin: 20px;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+/* Footer Chat */
+.chat .footer-chat {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-top: 1px solid #e9ecef;
+    border-radius: 0 0 12px 12px;
+    padding: 0 20px;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.chat .footer-left-icons,
+.chat .footer-right-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat .footer-left-icons i,
+.chat .footer-right-icons i {
+    font-size: 20px;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.chat .footer-left-icons i:hover,
+.chat .footer-right-icons i:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+    transform: scale(1.1);
+}
+
+.chat .write-message {
+    flex: 1;
+    height: 42px;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: 1px solid #dee2e6;
+    border-radius: 25px;
+    background-color: #f8f9fa;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.chat .write-message::placeholder {
+    color: #adb5bd;
+}
+
+.chat .write-message:focus {
+    border-color: #007bff;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.chat .footer-right-icons .bi-send {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    font-size: 14px;
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat .footer-right-icons .bi-send:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: scale(1.05);
+}
+
+/* File Preview (Upload preview before sending) */
+.chat .file-preview {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    margin: 10px 0;
+    gap: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.chat .file-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat .file-icon {
+    font-size: 24px;
+    color: #6c757d;
+    width: 32px;
+    text-align: center;
+}
+
+.chat .file-info {
+    flex: 1;
+}
+
+.chat .file-name {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.chat .file-details {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* Preview Action Buttons */
+.chat .preview-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.chat .btn-send,
+.chat .btn-cancel {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.chat .btn-send {
+    background: #007bff;
+    color: white;
+}
+
+.chat .btn-send:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+.chat .btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.chat .btn-cancel:hover {
+    background: #545b62;
+    transform: translateY(-1px);
+}
+
+/* Upload Progress */
+.chat .upload-progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.chat .progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.chat .progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.chat .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.chat .progress-text {
+    font-size: 12px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.chat .upload-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.chat .upload-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.chat .upload-actions button {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Utility Classes */
+.chat .btn-warning {
+    background: #ffc107;
+    color: #000;
+}
+
+.chat .btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.chat .btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.chat .btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.chat .error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    border: 1px solid #f5c6cb;
+}
