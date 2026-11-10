@@ -65,7 +65,7 @@ Android APK dosyasını buradan indirebilirsiniz:
 
 ### Web Arayüz
 
-https://convoapp.app/login
+https://convoapp.online/login
 
 **Sistem Gereksinimleri:**
 - Android 7.0 (API 24) veya üzeri
@@ -156,7 +156,7 @@ Download the Android APK here:
 
 ### Web Interface
 
-https://convoapp.app/login
+https://convoapp.online/login
 
 **System Requirements:**
 - Android 7.0 (API 24) or higher
