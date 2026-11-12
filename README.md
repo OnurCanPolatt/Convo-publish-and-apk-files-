@@ -36,7 +36,8 @@ Convo, .NET 9, Blazor Hybrid, SignalR ve Janus WebRTC Gateway kullanılarak geli
 | Kategori | Teknoloji |
 |----------|-----------|
 | **Backend** | .NET 9, ASP.NET Core |
-| **Frontend** | Blazor Hybrid |
+| **Frontend/Web** | Blazor Hybrid |
+| **Frontend/Mobil** | Flutter |
 | **Gerçek Zamanlı İletişim** | SignalR |
 | **Video/Ses** | Janus WebRTC Gateway |
 | **Depolama** | MinIO (S3-uyumlu) |
@@ -61,7 +62,7 @@ Docker Hub rehberi aşağıdaki konular için eksiksiz talimatlar sağlar:
 
 Android APK dosyasını buradan indirebilirsiniz:
 
-[![Download APK](https://img.shields.io/badge/Download-APK_v1.0-green?style=for-the-badge&logo=android)](https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-/releases/tag/v1.0)
+[![Download APK](https://img.shields.io/badge/Download-APK_Latest-green?style=for-the-badge&logo=android)](https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-/releases/latest)
 
 ### Web Arayüz
 
@@ -127,7 +128,8 @@ Convo is a modern real-time communication platform built with .NET 9, Blazor Hyb
 | Category | Technology |
 |----------|-----------|
 | **Backend** | .NET 9, ASP.NET Core |
-| **Frontend** | Blazor Hybrid |
+| **Frontend/Web** | Blazor Hybrid |
+| **Frontend/Mobil** | Flutter |
 | **Real-Time Communication** | SignalR |
 | **Video/Audio** | Janus WebRTC Gateway |
 | **Storage** | MinIO (S3-compatible) |
@@ -152,7 +154,7 @@ The Docker Hub guide provides complete instructions for:
 
 Download the Android APK here:
 
-[![Download APK](https://img.shields.io/badge/Download-APK_v1.0-green?style=for-the-badge&logo=android)](https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-/releases/tag/v1.0)
+[![Download APK](https://img.shields.io/badge/Download-APK_Latest-green?style=for-the-badge&logo=android)](https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-/releases/latest)
 
 ### Web Interface
 
@@ -165,7 +167,7 @@ https://convoapp.online/login
 
 ### 🖼️ Screenshots
 
-<summary>📱 Mobil App Demo</summary>
+<summary>📱 Mobile App Demo</summary>
 
 <p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220" >
 
