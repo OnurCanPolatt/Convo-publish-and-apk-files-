@@ -47,16 +47,21 @@ Convo, .NET 9, Blazor Hybrid, SignalR ve Janus WebRTC Gateway kullanılarak geli
 
 ### 📦 Kurulum
 
-Convo uygulamasını kurmak için Docker Hub'daki detaylı kurulum rehberini takip edin. Rehber, Docker Compose yapılandırması, Janus medya sunucusu kurulumu, Nginx ayarları ve SSL sertifikası kurulumunu içermektedir.
+Convo, hazır bir Docker imajı olarak yayınlanmıştır. Kurulum için Docker Hub'daki adım adım rehberi takip edin. Rehber; DNS ayarlarını, Docker Compose yapılandırmasını, Janus medya sunucusu ve MinIO kurulumunu, Nginx ayarlarını ve SSL sertifikası kurulumunu içerir.
 
 [![Docker Hub Kurulum Rehberi](https://img.shields.io/badge/Kurulum_Rehberi-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
 
 Docker Hub rehberi aşağıdaki konular için eksiksiz talimatlar sağlar:
+- DNS ve alan adı ayarları (Cloudflare dahil)
 - Docker Compose yapılandırması oluşturma
 - Janus WebRTC Gateway kurulumu
 - MinIO depolama yapılandırması
 - Nginx reverse proxy kurulumu
 - SSL/HTTPS sertifikası kurulumu
+
+### 🌐 Web Arayüzü
+
+Canlı demo: https://convoapp.online/login
 
 ### 📱 Mobil Uygulama
 
@@ -64,39 +69,30 @@ Android APK dosyasını buradan indirebilirsiniz:
 
 [![Download APK](https://img.shields.io/badge/Download-APK_Latest-green?style=for-the-badge&logo=android)](https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-/releases/latest)
 
-### Web Arayüz
-
-https://convoapp.online/login
-
 **Sistem Gereksinimleri:**
 - Android 7.0 (API 24) veya üzeri
 - 110 MB boş depolama alanı
 - İnternet bağlantısı
 
 ### 🖼️ Ekran Görüntüleri
- <summary>📱 Mobil Uygulama Görüntüleri</summary>
 
-<p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220">
+<details open>
+<summary>📱 Mobil Uygulama Görüntüleri</summary>
 
-</p> </details>
-
-<summary>🌐 Web Arayüzü Görüntüleri</summary>
-
-<p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700">
-
- </p>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220">
+</p>
 
 </details>
 
-### 🔧 Geliştirme
-```bash
-# Repository'yi klonlayın
-git clone https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-.git
+<details open>
+<summary>🌐 Web Arayüzü Görüntüleri</summary>
 
-# Docker ile çalıştırın
-cd Convo-publish-and-apk-files-
-docker compose up -d
-```
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700">
+</p>
+
+</details>
 
 ### 👨‍💻 Geliştirici
 
@@ -105,6 +101,7 @@ docker compose up -d
 - GitHub: [@OnurCanPolatt](https://github.com/OnurCanPolatt)
 - Docker Hub: [onurcanpolat](https://hub.docker.com/r/onurcanpolat/convoapp/)
 
+---
 
 <a name="english"></a>
 ## 🇬🇧 English
@@ -129,7 +126,7 @@ Convo is a modern real-time communication platform built with .NET 9, Blazor Hyb
 |----------|-----------|
 | **Backend** | .NET 9, ASP.NET Core |
 | **Frontend/Web** | Blazor Hybrid |
-| **Frontend/Mobil** | Flutter |
+| **Frontend/Mobile** | Flutter |
 | **Real-Time Communication** | SignalR |
 | **Video/Audio** | Janus WebRTC Gateway |
 | **Storage** | MinIO (S3-compatible) |
@@ -139,26 +136,27 @@ Convo is a modern real-time communication platform built with .NET 9, Blazor Hyb
 
 ### 📦 Installation
 
-To install Convo, follow the detailed installation guide on Docker Hub. The guide includes Docker Compose configuration, Janus media server setup, Nginx configuration, and SSL certificate installation.
+Convo is published as a ready-to-use Docker image. To install it, follow the step-by-step guide on Docker Hub. The guide covers DNS setup, Docker Compose configuration, Janus media server and MinIO setup, Nginx configuration, and SSL certificate installation.
 
 [![Docker Hub Installation Guide](https://img.shields.io/badge/Installation_Guide-Docker_Hub-blue?logo=docker&style=for-the-badge)](https://hub.docker.com/r/onurcanpolat/convoapp)
 
 The Docker Hub guide provides complete instructions for:
+- DNS and domain setup (including Cloudflare)
 - Creating Docker Compose configuration
 - Janus WebRTC Gateway setup
 - MinIO storage configuration
 - Nginx reverse proxy setup
 - SSL/HTTPS certificate installation
 
+### 🌐 Web Interface
+
+Live demo: https://convoapp.online/login
+
 ### 📱 Mobile App
 
 Download the Android APK here:
 
 [![Download APK](https://img.shields.io/badge/Download-APK_Latest-green?style=for-the-badge&logo=android)](https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-/releases/latest)
-
-### Web Interface
-
-https://convoapp.online/login
 
 **System Requirements:**
 - Android 7.0 (API 24) or higher
@@ -167,29 +165,24 @@ https://convoapp.online/login
 
 ### 🖼️ Screenshots
 
+<details open>
 <summary>📱 Mobile App Demo</summary>
 
-<p align="center"> <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220" >
-
- </p> </details>
-
-<summary>🌐 Web App Demo</summary>
-
-<p align="center"> <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700" >
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/701b6bed-1abc-46c7-8bdb-ceb6bacbfd0a" width="220">
 </p>
 
 </details>
 
-### 🔧 Development
-```bash
-# Clone the repository
-git clone https://github.com/OnurCanPolatt/Convo-publish-and-apk-files-.git
+<details open>
+<summary>🌐 Web App Demo</summary>
 
-# Run with Docker
-cd Convo-publish-and-apk-files-
-docker compose up -d
-```
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a6ee93c1-7ddf-44e9-89f8-ad47149734f9" width="700">
+</p>
+
+</details>
+
 ### 👨‍💻 Developer
 
 **Onur Can Polat**
